@@ -112,7 +112,7 @@ public abstract class AbstractInitLetter implements InitLetter {
     return format(hash256).getBytes();
   }
 
-    protected byte[] getHash(RSAPublicKey publicKey) throws EbicsException {
+    public static byte[] getHash(RSAPublicKey publicKey) throws EbicsException {
         String			modulus;
         String			exponent;
         String			hash;
@@ -146,7 +146,7 @@ public abstract class AbstractInitLetter implements InitLetter {
    * @param hash256 the hash input
    * @return the formatted hash
    */
-  private String format(String hash256) {
+  private static String format(String hash256) {
     StringBuffer buffer = new StringBuffer();
     for (int i = 0; i < hash256.length(); i += 2) {
       buffer.append(hash256.charAt(i));

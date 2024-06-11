@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:ebics="http://www.ebics.org/H003" targetNamespace="http://www.ebics.org/H003" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+<!-- Mit XMLSpy v2008 rel. 2 (http://www.altova.com) von Sabine Wenzel (SIZ Bonn) bearbeitet -->
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:ebics="urn:org:ebics:H004" targetNamespace="urn:org:ebics:H004" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
 	<annotation>
-		<documentation xml:lang="de">ebics_request.xsd ist das EBICS-Protokollschema für Anfragen.</documentation>
-		<documentation xml:lang="en">ebics_request.xsd is the appropriate EBICS protocol schema for standard requests.</documentation>
+		<documentation xml:lang="de">ebics_request_H004.xsd ist das EBICS-Protokollschema für Anfragen.</documentation>
+		<documentation xml:lang="en">ebics_request_H004.xsd is the appropriate EBICS protocol schema for standard requests.</documentation>
 	</annotation>
-	<include schemaLocation="ebics_types.xsd"/>
-	<include schemaLocation="ebics_orders.xsd"/>
+	<include schemaLocation="ebics_types_H004.xsd"/>
+	<include schemaLocation="ebics_orders_H004.xsd"/>
 	<import namespace="http://www.w3.org/2000/09/xmldsig#" schemaLocation="xmldsig-core-schema.xsd"/>
 	<element name="ebicsRequest">
 		<annotation>
-			<documentation xml:lang="de">Electronic Banking Internet Communication Standard des Zentralen Kreditausschusses (ZKA): Multibankfähige Schnittstelle zur internetbasierten Kommunikation.</documentation>
-			<documentation xml:lang="en">Electronic Banking Internet Communication Standard of the "Zentraler Kreditausschuss (ZKA)": multi-bank capable interface for internet-based communication.</documentation>
+			<documentation xml:lang="de">Electronic Banking Internet Communication Standard of the EBICS SCRL: Multibankfähige Schnittstelle zur internetbasierten Kommunikation.</documentation>
+			<documentation xml:lang="en">Electronic Banking Internet Communication Standard der EBICS SCRL: multi-bank capable interface for internet-based communication.</documentation>
 		</annotation>
 		<complexType>
 			<sequence>
@@ -306,7 +307,7 @@
 				<complexType>
 					<simpleContent>
 						<extension base="ebics:SegmentNumberType">
-							<attribute name="lastSegment" type="boolean" use="optional" default="false">
+							<attribute name="lastSegment" type="boolean" use="required">
 								<annotation>
 									<documentation xml:lang="de">Ist dies das letzte Segment der Übertragung?</documentation>
 									<documentation xml:lang="en">Is this segment meant to be the last one regarding this transmission?</documentation>

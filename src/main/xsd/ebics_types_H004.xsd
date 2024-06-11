@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:esig="http://www.ebics.org/S001" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:ebics="http://www.ebics.org/H003" targetNamespace="http://www.ebics.org/H003" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+<!-- Mit XMLSpy v2008 rel. 2 (http://www.altova.com) von Sabine Wenzel (SIZ Bonn) bearbeitet -->
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:esig="http://www.ebics.org/S001" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:ebics="urn:org:ebics:H004" targetNamespace="urn:org:ebics:H004" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
 	<import namespace="http://www.ebics.org/S001" schemaLocation="ebics_signature.xsd"/>
 	<import namespace="http://www.w3.org/2000/09/xmldsig#" schemaLocation="xmldsig-core-schema.xsd"/>
 	<annotation>
-		<documentation xml:lang="de">ebics_types.xsd enthält einfache Typdefinitionen für EBICS.</documentation>
+		<documentation xml:lang="de">ebics_types_H004.xsd enthält einfache Typdefinitionen für EBICS.</documentation>
 	</annotation>
 	<simpleType name="ProtocolVersionType">
 		<annotation>
@@ -1479,22 +1480,6 @@
 					<documentation xml:lang="de">Updates abholen</documentation>
 				</annotation>
 			</enumeration>
-			<enumeration value="C52">
-				<annotation>
-					<documentation xml:lang="de">camt.052 Vormerkposten / Avise (VMK)</documentation>
-				</annotation>
-			</enumeration>
-			<enumeration value="C53">
-				<annotation>
-					<documentation xml:lang="de">camt.053 Tagesauszug (STA)</documentation>
-				</annotation>
-			</enumeration>
-			<enumeration value="C54">
-				<annotation>
-					<documentation xml:lang="de">Sammelbuchungsinformationen (DTI)</documentation>
-				</annotation>
-			</enumeration>
-
 		</restriction>
 	</simpleType>
 	<simpleType name="OrderIDType">
@@ -2228,6 +2213,70 @@
 			</extension>
 		</complexContent>
 	</complexType>
+	<complexType name="SignatureCertificateInfoType">
+		<annotation>
+			<documentation xml:lang="de">Datentyp für öffentliche bankfachliche Schlüssel.</documentation>
+			<documentation xml:lang="en">Data type for public authorisation (ES) key.</documentation>
+		</annotation>
+		<complexContent>
+			<extension base="ebics:CertificateInfoType">
+				<sequence>
+					<element name="SignatureVersion" type="ebics:SignatureVersionType">
+						<annotation>
+							<documentation xml:lang="de">Version des EU-Signaturverfahrens.</documentation>
+							<documentation xml:lang="en">ES-Version.</documentation>
+						</annotation>
+					</element>
+				</sequence>
+			</extension>
+		</complexContent>
+	</complexType>
+	<complexType name="AuthenticationCertificateInfoType">
+		<annotation>
+			<documentation xml:lang="de">Datentyp für öffentlichen Schlüssel zur Authentisierung.</documentation>
+			<documentation xml:lang="en">Data type for public for identification and authentication.</documentation>
+		</annotation>
+		<complexContent>
+			<extension base="ebics:CertificateInfoType">
+				<sequence>
+					<element name="AuthenticationVersion" type="ebics:AuthenticationVersionType">
+						<annotation>
+							<documentation xml:lang="de">Version des Authentifikationsverfahrens.</documentation>
+							<documentation xml:lang="de">Authentication version.</documentation>
+						</annotation>
+					</element>
+				</sequence>
+			</extension>
+		</complexContent>
+	</complexType>
+	<complexType name="EncryptionCertificateInfoType">
+		<annotation>
+			<documentation xml:lang="de">Datentyp für öffentlichen Verschlüsselungsschlüssel.</documentation>
+			<documentation xml:lang="en">Data type for encryption key.</documentation>
+		</annotation>
+		<complexContent>
+			<extension base="ebics:CertificateInfoType">
+				<sequence>
+					<element name="EncryptionVersion" type="ebics:EncryptionVersionType">
+						<annotation>
+							<documentation xml:lang="de">Version des Verschlüsselungsverfahrens.</documentation>
+							<documentation xml:lang="en">Encryption Version.</documentation>
+						</annotation>
+					</element>
+				</sequence>
+			</extension>
+		</complexContent>
+	</complexType>
+	<complexType name="CertificateInfoType">
+		<annotation>
+			<documentation xml:lang="de">Datentyp für die Zertifikate hinsichtlich der "bank-technical signature for authorisation" (ES).</documentation>
+			<documentation xml:lang="en">Data Type for Certificates for the bank-technical signature for authorisation (ES)</documentation>
+		</annotation>
+		<sequence>
+			<element ref="ds:X509Data"/>
+			<any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+		</sequence>
+	</complexType>
 	<simpleType name="ReturnCodeType">
 		<annotation>
 			<documentation xml:lang="de">Datentyp für Antwortcodes.</documentation>
@@ -2322,10 +2371,10 @@
 					<complexType>
 						<simpleContent>
 							<extension base="anySimpleType">
-								<attribute name="Type" type="NCName" use="optional" default="string">
+								<attribute name="Type" type="NCName" use="required">
 									<annotation>
-										<documentation xml:lang="de">XML-Typ des Parameterwerts (Default=string).</documentation>
-										<documentation xml:lang="en">XML type of the parameter value (default is string).</documentation>
+										<documentation xml:lang="de">XML-Typ des Parameterwerts (Vorschlag für default ist string).</documentation>
+										<documentation xml:lang="en">XML type of the parameter value (Proposal for default is string).</documentation>
 									</annotation>
 								</attribute>
 							</extension>

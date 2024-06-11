@@ -54,12 +54,13 @@ import org.kopi.ebics.interfaces.LetterManager;
 import org.kopi.ebics.interfaces.PasswordCallback;
 import org.kopi.ebics.io.IOUtils;
 import org.kopi.ebics.messages.Messages;
-import org.kopi.ebics.schema.h003.OrderAttributeType;
+import org.kopi.ebics.schema.h004.OrderAttributeType;
 import org.kopi.ebics.session.DefaultConfiguration;
 import org.kopi.ebics.session.EbicsSession;
 import org.kopi.ebics.session.OrderType;
 import org.kopi.ebics.session.Product;
 import org.kopi.ebics.utils.Constants;
+import org.kopi.ebics.letter.AbstractInitLetter;
 
 /**
  * The ebics client application. Performs necessary tasks to contact the ebics
@@ -270,6 +271,7 @@ public class EbicsClient {
             partners.put(partner.getPartnerId(), partner);
             banks.put(bank.getHostId(), bank);
             logger.info(messages.getString("user.load.success", userId));
+            System.out.println(new String(AbstractInitLetter.getHash(user.getX002PublicKey())));
             return user;
         } catch (Exception e) {
             logger.error(messages.getString("user.load.error"), e);

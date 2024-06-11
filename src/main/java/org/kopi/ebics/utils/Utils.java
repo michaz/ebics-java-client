@@ -206,6 +206,8 @@ public final class Utils {
     Node 				node;
 
     try {
+      System.out.println(new String(input));
+      System.out.println("===");
       factory = DocumentBuilderFactory.newInstance();
       factory.setNamespaceAware(true);
       factory.setValidating(true);

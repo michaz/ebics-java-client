@@ -54,6 +54,8 @@ public class INIRequestElement extends DefaultEbicsRootElement {
 
     signaturePubKey = new SignaturePubKeyOrderDataElement(session);
     signaturePubKey.build();
+    System.out.println(new String(signaturePubKey.prettyPrint()));
+
     unsecuredRequest = new UnsecuredRequestElement(session,
 	                                           OrderType.INI,
 	                                           orderId == null ? session.getUser().getPartner().nextOrderId() : orderId,
@@ -63,7 +65,7 @@ public class INIRequestElement extends DefaultEbicsRootElement {
 
   @Override
   public byte[] toByteArray() {
-    setSaveSuggestedPrefixes("http://www.ebics.org/H003", "");
+    setSaveSuggestedPrefixes("http://www.ebics.org/H004", "");
 
     return unsecuredRequest.toByteArray();
   }

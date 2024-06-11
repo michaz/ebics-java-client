@@ -10,7 +10,11 @@
   </xb:namespace>
   
   <xb:namespace uri="http://www.ebics.org/H003">
-    <xb:package>org.kopi.ebics.schema.h003</xb:package>
+    <xb:package>org.kopi.ebics.schema.h004</xb:package>
+  </xb:namespace>
+
+  <xb:namespace uri="urn:org:ebics:H004">
+    <xb:package>org.kopi.ebics.schema.h004</xb:package>
   </xb:namespace>
   
   <xb:namespace uri="http://www.w3.org/2000/09/xmldsig#">
