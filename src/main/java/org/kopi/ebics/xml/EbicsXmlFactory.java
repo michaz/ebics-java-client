@@ -888,20 +888,6 @@ public class EbicsXmlFactory {
   }
 
   /**
-   * Create the <code>SignatureData</code> XML object
-   * @param authenticate should authenticate?
-   * @param signatureData the signature data value
-   * @return the <code>SignatureData</code> XML object
-   */
-  public static SignatureData createSignatureData(boolean authenticate, byte[] signatureData) {
-    SignatureData newSignatureData = SignatureData.Factory.newInstance();
-    newSignatureData.setAuthenticate(authenticate);
-    newSignatureData.setByteArrayValue(signatureData);
-
-    return newSignatureData;
-  }
-
-  /**
    * Create the <code>TransferReceipt</code> XML object
    * @param authenticate should authenticate?
    * @param receiptCode the receipt code

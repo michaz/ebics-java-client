@@ -168,7 +168,12 @@ public class UploadInitializationRequestElement extends InitializationRequestEle
     encryptionPubKeyDigest = EbicsXmlFactory.createEncryptionPubKeyDigest(session.getConfiguration().getEncryptionVersion(),
 								          "http://www.w3.org/2001/04/xmlenc#sha256",
 								          decodeHex(session.getUser().getPartner().getBank().getE002Digest()));
-      signatureData = EbicsXmlFactory.createSignatureData(true, Utils.encrypt(Utils.zip(userSignature.toByteArray()), keySpec));
+      byte[] signatureData1 = Utils.encrypt(Utils.zip(userSignature.toByteArray()), keySpec);
+      SignatureData newSignatureData = SignatureData.Factory.newInstance();
+      newSignatureData.setAuthenticate(true);
+      newSignatureData.setByteArrayValue(signatureData1);
+
+      signatureData = newSignatureData;
     dataEncryptionInfo = EbicsXmlFactory.createDataEncryptionInfo(true,
 	                                                          encryptionPubKeyDigest,
 	                                                          generateTransactionKey());
