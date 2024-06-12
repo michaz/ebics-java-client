@@ -34,15 +34,12 @@ import java.util.zip.Inflater;
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.xml.security.c14n.Canonicalizer;
-import org.apache.xml.security.utils.IgnoreAllErrorHandler;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.kopi.ebics.exception.EbicsException;
 import org.kopi.ebics.messages.Messages;
@@ -198,27 +195,14 @@ public final class Utils {
    * @return the canonized form of the given XML
    * @throws EbicsException
    */
-  public static byte[] canonize(Node document) throws EbicsException {
-    NodeIterator			iter;
-    ByteArrayOutputStream		output;
-    Node 				node;
-
+  public static byte[] getCanonicalizedPartsThatNeedAuthentication(Node document) throws EbicsException {
     try {
       XPath xpath = XPathFactory.newInstance().newXPath();
-
-      // Compile an XPath expression
       XPathExpression expr = xpath.compile("//*[@authenticate='true']");
-      NodeList nodeList = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
-      Set<Node> nodeSet = new HashSet<Node>();
-      for (int i = 0; i < nodeList.getLength(); i++) {
-        node = nodeList.item(i);
-        nodeSet.add(node);
-      }
-
-      output = new ByteArrayOutputStream();
-
       Canonicalizer canonicalizer = Canonicalizer.getInstance(Canonicalizer.ALGO_ID_C14N_OMIT_COMMENTS);
-      canonicalizer.canonicalizeXPathNodeSet(nodeSet, output);
+      Node node = (Node) expr.evaluate(document, XPathConstants.NODE);
+      ByteArrayOutputStream output = new ByteArrayOutputStream();
+      canonicalizer.canonicalizeSubtree(node, output);
       return output.toByteArray();
     } catch (Exception e) {
       throw new EbicsException(e.getMessage());

@@ -67,33 +67,6 @@ public class Signature extends DefaultEbicsRootElement {
   }
 
   public void build() throws EbicsException {
-    SignedInfoType signedInfoType = SignedInfoType.Factory.newInstance();
-    SignatureMethodType signatureMethodType = SignatureMethodType.Factory.newInstance();
-    signatureMethodType.setAlgorithm("http://www.w3.org/2001/04/xmldsig-more#rsa-sha256");
-    signedInfoType.setSignatureMethod(signatureMethodType);
-    CanonicalizationMethodType newCanonicalizationMethodType = CanonicalizationMethodType.Factory.newInstance();
-    newCanonicalizationMethodType.setAlgorithm(Canonicalizer.ALGO_ID_C14N_OMIT_COMMENTS);
-    signedInfoType.setCanonicalizationMethod(newCanonicalizationMethodType);
-    DigestMethodType newDigestMethodType = DigestMethodType.Factory.newInstance();
-    newDigestMethodType.setAlgorithm("http://www.w3.org/2001/04/xmlenc#sha256");
-
-    TransformType newTransformType = TransformType.Factory.newInstance();
-    newTransformType.setAlgorithm(Canonicalizer.ALGO_ID_C14N_OMIT_COMMENTS);
-
-    TransformsType newTransformsType = TransformsType.Factory.newInstance();
-    newTransformsType.setTransformArray(new TransformType[] {newTransformType});
-
-    ReferenceType newReferenceType = ReferenceType.Factory.newInstance();
-    newReferenceType.setURI("#xpointer(//*[@authenticate='true'])");
-    newReferenceType.setTransforms(newTransformsType);
-    newReferenceType.setDigestMethod(newDigestMethodType);
-    newReferenceType.setDigestValue(digest);
-
-    signedInfoType.setReferenceArray(new ReferenceType[] {newReferenceType});
-
-    SignatureType newSignatureType = SignatureType.Factory.newInstance();
-    newSignatureType.setSignedInfo(signedInfoType);
-    xmlObject = newSignatureType;
   }
 
   /**
@@ -184,14 +157,6 @@ public class Signature extends DefaultEbicsRootElement {
   public byte[] sign(XmlObject context) throws EbicsException {
     try {
       Canonicalizer canonicalizer = Canonicalizer.getInstance(Canonicalizer.ALGO_ID_C14N_OMIT_COMMENTS);
-      System.out.println("============");
-      System.out.println("============");
-      System.out.println("============");
-      context.save(System.out);
-      System.out.println("============");
-      System.out.println("===PUUUUUUUPS=========");
-      System.out.println("============");
-
       XPath xpath = XPathFactory.newInstance().newXPath();
 
       // Compile an XPath expression

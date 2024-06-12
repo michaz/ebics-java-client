@@ -53,6 +53,14 @@ Main differences with this fork:
 - XMLBeans doesn't keep the DOM pretty-printed. The pretty-print parameter is just used before writing.
   This effectively breaks the signature stuff, which is why upstream had to use like 3 different XML
   frameworks and would read and write everything 5 times.
+- The same is true for namespace prefixes. In the DOM, namespace prefixes are assigned arbitrarily,
+  even when I try to configure them on creation. Only when I write everything out is my configuration
+  used.
+- This means I cannot do what seems to be the idea of XML Security, which is construct my document
+  and then let the XML Security library sign parts of it in the DOM. When I write everything out,
+  XMLBeans will think it can rewrite stuff and my signature will be invalid.
+- This means that while XML Security is somewhat brittle by design, XMLBeans is an odd choice
+  as a tool for this particular project.
 - When I try to update XMLBeans to the latest version, I find that it is half-retired and only
   used to read MS Office files these days.
 - When I still try to use the latest version, I find that it doesn't read the official EBICS schema

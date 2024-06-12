@@ -27,6 +27,8 @@ import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.interfaces.RSAPublicKey;
 
+import org.apache.xml.security.c14n.CanonicalizationException;
+import org.apache.xml.security.c14n.InvalidCanonicalizerException;
 import org.apache.xmlbeans.XmlException;
 import org.kopi.ebics.certificate.KeyStoreManager;
 import org.kopi.ebics.certificate.KeyUtil;
@@ -36,6 +38,10 @@ import org.kopi.ebics.io.ByteArrayContentFactory;
 import org.kopi.ebics.session.EbicsSession;
 import org.kopi.ebics.utils.Utils;
 import org.kopi.ebics.xml.*;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathExpressionException;
 
 
 public class KeyManagement {
@@ -84,7 +90,7 @@ public class KeyManagement {
         response.report();
     }
 
-    public void sendHPB() throws IOException, GeneralSecurityException, EbicsException, XmlException {
+    public void sendHPB() throws IOException, GeneralSecurityException, EbicsException, XmlException, ParserConfigurationException, SAXException, XPathExpressionException, InvalidCanonicalizerException, CanonicalizationException {
         HttpRequestSender sender = new HttpRequestSender(session);
         NoPubKeyDigestsRequestDocumentForHPB request = NoPubKeyDigestsRequestDocumentForHPB.create(session);
         session.getConfiguration().getTraceManager().trace(request);
