@@ -47,7 +47,6 @@ public class SignaturePubKeyOrderDataElement extends DefaultEbicsRootElement {
     super(session);
   }
 
-  @Override
   public void build() throws EbicsException {
     SignaturePubKeyInfoType		signaturePubKeyInfo;
     X509DataType 			x509Data;
@@ -68,7 +67,7 @@ public class SignaturePubKeyOrderDataElement extends DefaultEbicsRootElement {
     signaturePubKeyOrderData = EbicsXmlFactory.createSignaturePubKeyOrderData(signaturePubKeyInfo,
 									      session.getUser().getPartner().getPartnerId(),
 									      session.getUser().getUserId());
-    document = EbicsXmlFactory.createSignaturePubKeyOrderDataDocument(signaturePubKeyOrderData);
+    xmlObject = EbicsXmlFactory.createSignaturePubKeyOrderDataDocument(signaturePubKeyOrderData);
   }
 
   @Override
@@ -78,10 +77,8 @@ public class SignaturePubKeyOrderDataElement extends DefaultEbicsRootElement {
 
   @Override
   public byte[] toByteArray() {
-    addNamespaceDecl("ds", "http://www.w3.org/2000/09/xmldsig#");
-    setSaveSuggestedPrefixes("http://www.ebics.org/S001", "");
 
-    return super.toByteArray();
+      return super.toByteArray();
   }
 
   // --------------------------------------------------------------------

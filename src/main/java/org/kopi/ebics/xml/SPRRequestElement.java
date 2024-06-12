@@ -116,7 +116,7 @@ public class SPRRequestElement extends InitializationRequestElement {
     encryptionPubKeyDigest = EbicsXmlFactory.createEncryptionPubKeyDigest(session.getConfiguration().getEncryptionVersion(),
 								          "http://www.w3.org/2001/04/xmlenc#sha256",
 								          decodeHex(session.getUser().getPartner().getBank().getE002Digest()));
-    signatureData = EbicsXmlFactory.createSignatureData(true, Utils.encrypt(Utils.zip(userSignature.prettyPrint()), keySpec));
+      signatureData = EbicsXmlFactory.createSignatureData(true, Utils.encrypt(Utils.zip(userSignature.toByteArray()), keySpec));
     dataEncryptionInfo = EbicsXmlFactory.createDataEncryptionInfo(true,
 	                                                          encryptionPubKeyDigest,
 	                                                          generateTransactionKey());
@@ -126,7 +126,7 @@ public class SPRRequestElement extends InitializationRequestElement {
 	                                         session.getConfiguration().getVersion(),
 	                                         header,
 	                                         body);
-    document = EbicsXmlFactory.createEbicsRequestDocument(request);
+    xmlObject = EbicsXmlFactory.createEbicsRequestDocument(request);
   }
 
   // --------------------------------------------------------------------

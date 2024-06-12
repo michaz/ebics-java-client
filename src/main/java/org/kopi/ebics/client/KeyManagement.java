@@ -27,6 +27,7 @@ import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.interfaces.RSAPublicKey;
 
+import org.apache.xmlbeans.XmlException;
 import org.kopi.ebics.certificate.KeyStoreManager;
 import org.kopi.ebics.certificate.KeyUtil;
 import org.kopi.ebics.exception.EbicsException;
@@ -34,13 +35,7 @@ import org.kopi.ebics.interfaces.ContentFactory;
 import org.kopi.ebics.io.ByteArrayContentFactory;
 import org.kopi.ebics.session.EbicsSession;
 import org.kopi.ebics.utils.Utils;
-import org.kopi.ebics.xml.HIARequestElement;
-import org.kopi.ebics.xml.HPBRequestElement;
-import org.kopi.ebics.xml.HPBResponseOrderDataElement;
-import org.kopi.ebics.xml.INIRequestElement;
-import org.kopi.ebics.xml.KeyManagementResponseElement;
-import org.kopi.ebics.xml.SPRRequestElement;
-import org.kopi.ebics.xml.SPRResponseElement;
+import org.kopi.ebics.xml.*;
 
 
 /**
@@ -81,7 +76,7 @@ public class KeyManagement {
     request.build();
     request.validate();
     session.getConfiguration().getTraceManager().trace(request);
-    httpCode = sender.send(new ByteArrayContentFactory(request.prettyPrint()));
+    httpCode = sender.send(new ByteArrayContentFactory(request.toByteArray()));
     Utils.checkHttpCode(httpCode);
     response = new KeyManagementResponseElement(sender.getResponseBody(), "INIResponse");
     response.build();
@@ -106,12 +101,20 @@ public class KeyManagement {
     request.build();
     request.validate();
     session.getConfiguration().getTraceManager().trace(request);
-    httpCode = sender.send(new ByteArrayContentFactory(request.prettyPrint()));
+    httpCode = sender.send(new ByteArrayContentFactory(request.toByteArray()));
     Utils.checkHttpCode(httpCode);
     response = new KeyManagementResponseElement(sender.getResponseBody(), "HIAResponse");
     response.build();
     session.getConfiguration().getTraceManager().trace(response);
     response.report();
+  }
+
+  public void printHPB() throws EbicsException, XmlException, IOException {
+    HPBRequestDocument request = new HPBRequestDocument(session);
+    request.build();
+    request.validate();
+    System.out.println("===");
+    System.out.println(new String(request.toByteArray()));
   }
 
   /**
@@ -122,8 +125,8 @@ public class KeyManagement {
    * @throws GeneralSecurityException data decryption error
    * @throws EbicsException server generated error message
    */
-  public void sendHPB() throws IOException, GeneralSecurityException, EbicsException {
-    HPBRequestElement			request;
+  public void sendHPB() throws IOException, GeneralSecurityException, EbicsException, XmlException {
+    HPBRequestDocument request;
     KeyManagementResponseElement	response;
     HttpRequestSender			sender;
     HPBResponseOrderDataElement		orderData;
@@ -135,11 +138,16 @@ public class KeyManagement {
     int					httpCode;
 
     sender = new HttpRequestSender(session);
-    request = new HPBRequestElement(session);
+    request = new HPBRequestDocument(session);
     request.build();
     request.validate();
     session.getConfiguration().getTraceManager().trace(request);
-    httpCode = sender.send(new ByteArrayContentFactory(request.prettyPrint()));
+    byte[] content = request.getMotherfuckingDocument().newInputStream().readAllBytes();
+    System.out.println("=====");
+    System.out.println("SENDUNG");
+    System.out.println("=====");
+    System.out.println(new String(content));
+    httpCode = sender.send(new ByteArrayContentFactory(content));
     Utils.checkHttpCode(httpCode);
     response = new KeyManagementResponseElement(sender.getResponseBody(), "HBPResponse");
     response.build();
@@ -192,7 +200,7 @@ public class KeyManagement {
     request.build();
     request.validate();
     session.getConfiguration().getTraceManager().trace(request);
-    httpCode = sender.send(new ByteArrayContentFactory(request.prettyPrint()));
+    httpCode = sender.send(new ByteArrayContentFactory(request.toByteArray()));
     Utils.checkHttpCode(httpCode);
     response = new SPRResponseElement(sender.getResponseBody());
     response.build();

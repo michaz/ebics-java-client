@@ -21,9 +21,7 @@ package org.kopi.ebics.xml;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.security.MessageDigest;
 
-import org.apache.commons.codec.binary.Hex;
 import org.kopi.ebics.exception.EbicsException;
 import org.kopi.ebics.interfaces.EbicsUser;
 import org.kopi.ebics.schema.s001.OrderSignatureDataType;
@@ -58,7 +56,6 @@ public class UserSignature extends DefaultEbicsRootElement {
     this.signatureVersion = signatureVersion;
   }
 
-  @Override
   public void build() throws EbicsException {
     UserSignatureDataSigBookType 	userSignatureData;
     OrderSignatureDataType		orderSignatureData;
@@ -77,7 +74,7 @@ public class UserSignature extends DefaultEbicsRootElement {
                                                                       user.getUserId(),
                                                                       signature);
     userSignatureData = EbicsXmlFactory.createUserSignatureDataSigBookType(new OrderSignatureDataType[] {orderSignatureData});
-    document = EbicsXmlFactory.createUserSignatureDataDocument(userSignatureData);
+    xmlObject = EbicsXmlFactory.createUserSignatureDataDocument(userSignatureData);
   }
 
   @Override
@@ -87,7 +84,6 @@ public class UserSignature extends DefaultEbicsRootElement {
 
   @Override
   public byte[] toByteArray() {
-    setSaveSuggestedPrefixes("http://www.ebics.org/S001", "");
 
     return super.toByteArray();
   }

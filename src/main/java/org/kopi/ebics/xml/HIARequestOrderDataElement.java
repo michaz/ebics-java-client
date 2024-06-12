@@ -48,7 +48,6 @@ public class HIARequestOrderDataElement extends DefaultEbicsRootElement {
     super(session);
   }
 
-  @Override
   public void build() throws EbicsException {
     HIARequestOrderDataType		request;
     AuthenticationPubKeyInfoType 	authenticationPubKeyInfo;
@@ -84,7 +83,7 @@ public class HIARequestOrderDataElement extends DefaultEbicsRootElement {
 	                                                    encryptionPubKeyInfo,
 	                                                    session.getUser().getPartner().getPartnerId(),
 	                                                    session.getUser().getUserId());
-    document = EbicsXmlFactory.createHIARequestOrderDataDocument(request);
+    xmlObject = EbicsXmlFactory.createHIARequestOrderDataDocument(request);
   }
 
   @Override
@@ -94,10 +93,8 @@ public class HIARequestOrderDataElement extends DefaultEbicsRootElement {
 
   @Override
   public byte[] toByteArray() {
-    addNamespaceDecl("ds", "http://www.w3.org/2000/09/xmldsig#");
-    setSaveSuggestedPrefixes("http://www.ebics.org/S001", "");
 
-    return super.toByteArray();
+      return super.toByteArray();
   }
 
   // --------------------------------------------------------------------

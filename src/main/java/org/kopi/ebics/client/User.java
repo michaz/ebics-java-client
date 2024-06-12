@@ -25,7 +25,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
-import java.security.Signature;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
@@ -41,7 +40,8 @@ import org.kopi.ebics.interfaces.EbicsUser;
 import org.kopi.ebics.interfaces.PasswordCallback;
 import org.kopi.ebics.interfaces.Savable;
 import org.kopi.ebics.utils.Utils;
-import org.kopi.ebics.xml.SignedInfo;
+import org.kopi.ebics.xml.NoPubKeyDigestsRequestDocumentForHPB;
+import org.kopi.ebics.xml.Signature;
 import org.kopi.ebics.xml.UserSignature;
 
 /**
@@ -457,15 +457,15 @@ public class User implements EbicsUser, Savable {
    * <p>Notes:
    * <ol>
    *   <li> The key length is defined else where.
-   *   <li> The padding is performed by the {@link Signature} class.
-   *   <li> The digest is already canonized in the {@link SignedInfo#sign(byte[]) sign(byte[])}
+   *   <li> The padding is performed by the {@link java.security.Signature} class.
+   *   <li> The digest is already canonized in the {@link Signature#sign(NoPubKeyDigestsRequestDocumentForHPB) sign(byte[])}
    * </ol>
    */
   @Override
   public byte[] authenticate(byte[] digest) throws GeneralSecurityException {
-    Signature			signature;
+    java.security.Signature signature;
 
-    signature = Signature.getInstance("SHA256WithRSA", BouncyCastleProvider.PROVIDER_NAME);
+    signature = java.security.Signature.getInstance("SHA256WithRSA", BouncyCastleProvider.PROVIDER_NAME);
     signature.initSign(x002PrivateKey);
     signature.update(digest);
     return signature.sign();
@@ -507,18 +507,18 @@ public class User implements EbicsUser, Savable {
    *        signature generation described in section 14.1.3.1 of the EBICS specification (V 2.4.2).
    * </ol>
    *
-   * <p>The {@link Signature} is a digital signature scheme with
+   * <p>The {@link java.security.Signature} is a digital signature scheme with
    * appendix (SSA) combining the RSA algorithm with the EMSA-PKCS1-v1_5 encoding
    * method.
    *
    * <p> The {@code digest} will be signed with the RSA user signature key using the
-   * {@link Signature} that will be instantiated with the <b>SHA-256</b>
+   * {@link java.security.Signature} that will be instantiated with the <b>SHA-256</b>
    * algorithm. This signature is then put in a {@link UserSignature} XML object that
    * will be sent to the EBICS server.
    */
   @Override
   public byte[] sign(byte[] digest) throws IOException, GeneralSecurityException {
-    Signature signature = Signature.getInstance("SHA256WithRSA", BouncyCastleProvider.PROVIDER_NAME);
+    java.security.Signature signature = java.security.Signature.getInstance("SHA256WithRSA", BouncyCastleProvider.PROVIDER_NAME);
     signature.initSign(a005PrivateKey);
     signature.update(removeOSSpecificChars(digest));
     return signature.sign();

@@ -19,8 +19,12 @@
 
 package org.kopi.ebics.xml;
 
+import org.apache.xmlbeans.XmlException;
+import org.apache.xmlbeans.XmlObject;
 import org.kopi.ebics.exception.EbicsException;
 import org.kopi.ebics.session.EbicsSession;
+
+import java.io.IOException;
 
 /**
  * The <code>HPBRequestElement</code> is the element to be sent when
@@ -29,13 +33,13 @@ import org.kopi.ebics.session.EbicsSession;
  * @author hachani
  *
  */
-public class HPBRequestElement extends DefaultEbicsRootElement {
+public class HPBRequestDocument extends DefaultEbicsRootElement {
 
   /**
    * Constructs a new HPB Request element.
    * @param session the current ebics session.
    */
-  public HPBRequestElement(EbicsSession session) {
+  public HPBRequestDocument(EbicsSession session) {
     super(session);
   }
 
@@ -44,34 +48,38 @@ public class HPBRequestElement extends DefaultEbicsRootElement {
     return "HPBRequest.xml";
   }
 
-  @Override
-  public void build() throws EbicsException {
-    SignedInfo			signedInfo;
-    byte[]			signature;
+  public void build() throws EbicsException, XmlException, IOException {
+    noPubKeyDigestsRequestDocumentForHPB = new NoPubKeyDigestsRequestDocumentForHPB(session);
+    noPubKeyDigestsRequestDocumentForHPB.build();
+    Signature authSignature = new Signature(session.getUser(), noPubKeyDigestsRequestDocumentForHPB.getDigest());
+    authSignature.build();
+    noPubKeyDigestsRequestDocumentForHPB.setAuthSignature(authSignature);
+    noPubKeyDigestsRequestDocumentForHPB.xmlObject.save(System.out);
+    authSignature.sign(noPubKeyDigestsRequestDocumentForHPB.xmlObject);
+    noPubKeyDigestsRequestDocumentForHPB.setAuthSignature(authSignature);
 
-    noPubKeyDigestsRequest = new NoPubKeyDigestsRequestElement(session);
-    noPubKeyDigestsRequest.build();
-    signedInfo = new SignedInfo(session.getUser(), noPubKeyDigestsRequest.getDigest());
-    signedInfo.build();
-    noPubKeyDigestsRequest.setAuthSignature(signedInfo.getSignatureType());
-    signature = signedInfo.sign(noPubKeyDigestsRequest.toByteArray());
-    noPubKeyDigestsRequest.setSignatureValue(signature);
+    System.out.println(noPubKeyDigestsRequestDocumentForHPB.xmlObject);
+    System.out.println(new String(noPubKeyDigestsRequestDocumentForHPB.toByteArray()));
+    xmlObject = noPubKeyDigestsRequestDocumentForHPB.xmlObject;
   }
 
   @Override
   public byte[] toByteArray() {
-    return noPubKeyDigestsRequest.toByteArray();
+    return noPubKeyDigestsRequestDocumentForHPB.toByteArray();
   }
 
-  @Override
   public void validate() throws EbicsException {
-    noPubKeyDigestsRequest.validate();
+    noPubKeyDigestsRequestDocumentForHPB.validate();
+  }
+
+  public XmlObject getMotherfuckingDocument() {
+    return xmlObject;
   }
 
   // --------------------------------------------------------------------
   // DATA MEMBERS
   // --------------------------------------------------------------------
 
-  private NoPubKeyDigestsRequestElement		noPubKeyDigestsRequest;
+  private NoPubKeyDigestsRequestDocumentForHPB noPubKeyDigestsRequestDocumentForHPB;
   private static final long 			serialVersionUID = -5565390370996751973L;
 }

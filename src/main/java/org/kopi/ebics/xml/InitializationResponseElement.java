@@ -49,10 +49,9 @@ public class InitializationResponseElement extends DefaultResponseElement {
     this.orderType = orderType;
   }
 
-  @Override
   public void build() throws EbicsException {
     parse(factory);
-    response = ((EbicsResponseDocument)document).getEbicsResponse();
+    response = ((EbicsResponseDocument) xmlObject).getEbicsResponse();
     String code = response.getHeader().getMutable().getReturnCode();
     String text = response.getHeader().getMutable().getReportText();
     returnCode = ReturnCode.toReturnCode(code, text);

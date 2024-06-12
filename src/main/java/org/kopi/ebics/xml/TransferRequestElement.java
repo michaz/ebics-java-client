@@ -63,15 +63,14 @@ public abstract class TransferRequestElement extends DefaultEbicsRootElement {
     this.transactionId = transactionId;
   }
 
-  @Override
   public void build() throws EbicsException {
-    SignedInfo			signedInfo;
+    Signature signature;
 
     buildTransfer();
-    signedInfo = new SignedInfo(session.getUser(), getDigest());
-    signedInfo.build();
-    ((EbicsRequestDocument)document).getEbicsRequest().setAuthSignature(signedInfo.getSignatureType());
-    ((EbicsRequestDocument)document).getEbicsRequest().getAuthSignature().setSignatureValue(EbicsXmlFactory.createSignatureValueType(signedInfo.sign(toByteArray())));
+    signature = new Signature(session.getUser(), getDigest());
+    signature.build();
+    ((EbicsRequestDocument) xmlObject).getEbicsRequest().setAuthSignature(signature.getSignatureType());
+    ((EbicsRequestDocument) xmlObject).getEbicsRequest().getAuthSignature().setSignatureValue(EbicsXmlFactory.createSignatureValueType(signature.sign(null)));
   }
 
   @Override
@@ -85,10 +84,9 @@ public abstract class TransferRequestElement extends DefaultEbicsRootElement {
    * @throws EbicsException Failed to retrieve the digest value.
    */
   public byte[] getDigest() throws EbicsException {
-    addNamespaceDecl("ds", "http://www.w3.org/2000/09/xmldsig#");
 
     try {
-      return MessageDigest.getInstance("SHA-256", "BC").digest(Utils.canonize(toByteArray()));
+      return MessageDigest.getInstance("SHA-256", "BC").digest(Utils.canonize(xmlObject.getDomNode()));
     } catch (NoSuchAlgorithmException e) {
       throw new EbicsException(e.getMessage());
     } catch (NoSuchProviderException e) {
@@ -106,7 +104,6 @@ public abstract class TransferRequestElement extends DefaultEbicsRootElement {
 
   @Override
   public byte[] toByteArray() {
-    setSaveSuggestedPrefixes("http://www.ebics.org/H003", "");
 
     return super.toByteArray();
   }

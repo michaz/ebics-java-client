@@ -39,20 +39,6 @@ public interface EbicsRootElement extends EbicsElement {
   public byte[] toByteArray();
 
   /**
-   * Validates the request element according to the
-   * EBICS XML schema specification
-   * @throws EbicsException throws an EbicsException when validation fails
-   */
-  public void validate() throws EbicsException;
-
-  /**
-   * Adds a namespace declaration for the <code>EbicsRootElement</code>
-   * @param prefix namespace prefix
-   * @param uri namespace uri
-   */
-  public void addNamespaceDecl(String prefix, String uri);
-
-  /**
    * Saves the <code>EbicsElement</code> into a given output stream.
    * @param out the output stream
    * @throws EbicsException the save operation fails

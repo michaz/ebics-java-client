@@ -54,10 +54,8 @@ public abstract class DefaultResponseElement extends DefaultEbicsRootElement {
    */
   protected void parse(ContentFactory factory) throws EbicsException {
     try {
-      document = XmlObject.Factory.parse(factory.getContent());
-    } catch (XmlException e) {
-      throw new EbicsException(e.getMessage());
-    } catch (IOException e) {
+      xmlObject = XmlObject.Factory.parse(factory.getContent());
+    } catch (XmlException | IOException e) {
       throw new EbicsException(e.getMessage());
     }
   }
@@ -67,7 +65,7 @@ public abstract class DefaultResponseElement extends DefaultEbicsRootElement {
    * @throws EbicsException request fails.
    */
   public void report() throws EbicsException {
-    // checkReturnCode(returnCode);
+    checkReturnCode(returnCode);
   }
 
   protected void checkReturnCode(ReturnCode returnCode) throws EbicsException {

@@ -58,7 +58,6 @@ public class ReceiptRequestElement extends DefaultEbicsRootElement {
     this.name = name;
   }
 
-  @Override
   public void build() throws EbicsException {
     EbicsRequest			request;
     Header 				header;
@@ -66,7 +65,7 @@ public class ReceiptRequestElement extends DefaultEbicsRootElement {
     MutableHeaderType 			mutable;
     StaticHeaderType 			xstatic;
     TransferReceipt			transferReceipt;
-    SignedInfo				signedInfo;
+    Signature signature;
 
     mutable = EbicsXmlFactory.createMutableHeaderType("Receipt", null);
     xstatic = EbicsXmlFactory.createStaticHeaderType(session.getBankID(), transactionId);
@@ -77,16 +76,15 @@ public class ReceiptRequestElement extends DefaultEbicsRootElement {
 	                                         session.getConfiguration().getVersion(),
 	                                         header,
 	                                         body);
-    document = EbicsXmlFactory.createEbicsRequestDocument(request);
-    signedInfo = new SignedInfo(session.getUser(), getDigest());
-    signedInfo.build();
-    ((EbicsRequestDocument)document).getEbicsRequest().setAuthSignature(signedInfo.getSignatureType());
-    ((EbicsRequestDocument)document).getEbicsRequest().getAuthSignature().setSignatureValue(EbicsXmlFactory.createSignatureValueType(signedInfo.sign(toByteArray())));
+    xmlObject = EbicsXmlFactory.createEbicsRequestDocument(request);
+    signature = new Signature(session.getUser(), getDigest());
+    signature.build();
+    ((EbicsRequestDocument) xmlObject).getEbicsRequest().setAuthSignature(signature.getSignatureType());
+    ((EbicsRequestDocument) xmlObject).getEbicsRequest().getAuthSignature().setSignatureValue(EbicsXmlFactory.createSignatureValueType(signature.sign(null)));
   }
 
   @Override
   public byte[] toByteArray() {
-    setSaveSuggestedPrefixes("http://www.ebics.org/H003", "");
 
     return super.toByteArray();
   }
@@ -102,10 +100,9 @@ public class ReceiptRequestElement extends DefaultEbicsRootElement {
    * @throws EbicsException Failed to retrieve the digest value.
    */
   public byte[] getDigest() throws EbicsException {
-    addNamespaceDecl("ds", "http://www.w3.org/2000/09/xmldsig#");
 
     try {
-      return MessageDigest.getInstance("SHA-256", "BC").digest(Utils.canonize(toByteArray()));
+      return MessageDigest.getInstance("SHA-256", "BC").digest(Utils.canonize(xmlObject.getDomNode()));
     } catch (NoSuchAlgorithmException e) {
       throw new EbicsException(e.getMessage());
     } catch (NoSuchProviderException e) {

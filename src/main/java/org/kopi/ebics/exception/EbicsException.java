@@ -25,12 +25,16 @@ package org.kopi.ebics.exception;
  * @author hachani
  *
  */
-public class EbicsException extends Exception {
+public class EbicsException extends RuntimeException {
 
   /**
    * A means to construct a server error.
    */
   public EbicsException() {}
+
+  public EbicsException(Exception e) {
+    super(e);
+  }
 
   /**
    * A means to construct a server error with an additional message.

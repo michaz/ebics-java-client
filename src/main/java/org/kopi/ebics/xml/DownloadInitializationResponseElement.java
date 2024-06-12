@@ -57,7 +57,6 @@ public class DownloadInitializationResponseElement extends InitializationRespons
       checkReturnCode(returnCode);
   }
 
-  @Override
   public void build() throws EbicsException {
     super.build();
     numSegments = (int)response.getHeader().getStatic().getNumSegments();

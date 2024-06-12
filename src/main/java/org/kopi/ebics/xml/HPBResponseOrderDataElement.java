@@ -75,10 +75,9 @@ public class HPBResponseOrderDataElement extends DefaultResponseElement {
       return response.getAuthenticationPubKeyInfo().getPubKeyValue().getRSAKeyValue().getExponent();
   }
 
-  @Override
   public void build() throws EbicsException {
     parse(factory);
-    response = ((HPBResponseOrderDataDocument)document).getHPBResponseOrderData();
+    response = ((HPBResponseOrderDataDocument) xmlObject).getHPBResponseOrderData();
   }
 
   @Override

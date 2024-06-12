@@ -1,0 +1,105 @@
+###
+POST https://by6ebics.sparkasse-banking.de/ebicsweb/ebicsweb
+Content-Type: text/xml
+Accept: text/xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<urn:ebicsNoPubKeyDigestsRequest xmlns="urn:org:ebics:H004" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Revision="1" Version="H004">
+  <urn:header authenticate="true">
+    <urn:static>
+      <urn:HostID>D86-ELKO</urn:HostID>
+      <urn:Nonce>C4994BAF626400E8F703BF67643AF695</urn:Nonce>
+      <urn:Timestamp>2024-06-11T06:52:14.603+02:00</urn:Timestamp>
+      <urn:PartnerID>K0013706</urn:PartnerID>
+      <urn:UserID>F001B235</urn:UserID>
+      <urn:Product Language="de">EBICS Java Kernel 1.1-graphhopper-SNAPSHOT</urn:Product>
+      <urn:OrderDetails>
+        <urn:OrderType>HPB</urn:OrderType>
+        <urn:OrderAttribute>DZHNN</urn:OrderAttribute>
+      </urn:OrderDetails>
+      <urn:SecurityMedium>0000</urn:SecurityMedium>
+    </urn:static>
+    <urn:mutable />
+  </urn:header>
+  <urn:AuthSignature>
+    <ds:SignedInfo>
+      <ds:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315" />
+      <ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256" />
+      <ds:Reference URI="#xpointer(//*[@authenticate='true'])">
+        <ds:Transforms>
+          <ds:Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315" />
+        </ds:Transforms>
+        <ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256" />
+        <ds:DigestValue>QejA6ZA9yuCRtax81o5uQCmeEzjQF0WwXx/hlQvAmig=</ds:DigestValue>
+      </ds:Reference>
+    </ds:SignedInfo>
+    <ds:SignatureValue>dNJxE3aARFq38n/pHejNqhao/2UrjyCJBhV4Sd4ZUTA2klp6z41qKkMxlJ4tFT60qNPpGFaH40GSkyNL991TNxnW0AuA6NfZNfwFlLLAJmzAwMnGvY1tuUTZgX3wwpJbY6Tyh+ivza6257jCVodOAOaDQgHII69+pVCKp+6scqiqqY1xNIja8ZEYOLGv4kTG+mfFG5yDcRQrmgxsElbRDyAx+4MTUJc+GTkKb5efAJ2gFCcrbRUBJQXbGU3n8jesx9L2wre9NElD2O59rngUFXEkTFKadbxo7ELiO+xVH04lpUE1mCAFoWADZqHlE2YaoKVn4LSTGLam79tT2i0nKg==</ds:SignatureValue>
+  </urn:AuthSignature>
+  <urn:body />
+</urn:ebicsNoPubKeyDigestsRequest>
+
+
+###
+GET https://by6ebics.sparkasse-banking.de/ebicsweb/ebicsweb
+
+###
+POST https://by6ebics.sparkasse-banking.de/ebicsweb/ebicsweb
+Content-Type: text/xml
+Accept: text/xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<ebicsUnsecuredRequest xmlns="http://www.ebics.org/H004" Revision="1" Version="H004">
+  <header authenticate="true">
+    <static>
+      <HostID>D86-ELKO</HostID>
+      <PartnerID>K0013706</PartnerID>
+      <UserID>F0015982</UserID>
+      <Product Language="de">EBICS Java Kernel 1.0</Product>
+      <OrderDetails>
+        <OrderType>INI</OrderType>
+        <OrderAttribute>DZNNN</OrderAttribute>
+      </OrderDetails>
+        <SecurityMedium>0000</SecurityMedium>
+    </static>
+    <mutable>
+    </mutable>
+  </header>
+  <body>
+    <DataTransfer>
+      <OrderData>eNp1k1mPokAUhd8nmf9gmEfSVskiaNAONC4guICo7VtJoaAISLGIv36Imu7p6fRb5TuncpJ7z5Ver+ewUXgpCeKoR7WakGp4kRvjIDr0KGc5fBGp1/7vX5IdHCKU5ak3z3cTr5ql2EtVlKFG/T8iPcrPsqQLQFmWTW8XuKQZpwdgQ9iiHo4u/moq2buDgRAC2AG1B5Pg8IeqsxqN/9O0aB/fhVp6kBUKc++JaohJ17Llb/yhmDHOw5z0ZZOkbGJWJHLs2/7IkXCdOkTJve3SwjKvxUefqIbPqvRiON1m80KrDNG+OAJOBrNNBei47c/I7p1WINiwBdJ2jin6Aeb4eRsVI7j38xUxtKI82NAIFl4pgO16ss5PjA0gKi86VPJMv6LqJDMLHcjbPK9Yq5CP66ClI8jrVsgI2hu2HW2SLkC8uaAhZzu31LKK4rSy3g60sWKQCDY8dtK9nOilzi2O5DZh5IR3uI7M4OluNCVLEfGKGmuZNXLXN53GxXh/3A8ckx64MmMr6aythG2FOGf3PQ9bS3IJXFVLJms88lfhVLyer6x5vijDcTSuqvHplGNh5nUQMsDFTDfq8Ba6uoHhTVgYgtiTwD9D/jr6wTWJIy/K+vJCVu6+D/KxO/DD8qRlcPbsDJ2TPgMZ7gXyLwy3bHFdVuhybJNt8zRkuhBK4NP47Aj4XpLPSq0eZe/LEPIS+Ibv/QM/FVCaozSLvFRT+5O63KwA23XaB7tbHHJ/D2ud74iMBJ6gviLw0xnV4l+wVRx6</OrderData>
+    </DataTransfer>
+  </body>
+</ebicsUnsecuredRequest>
+
+###
+GET https://ebicsveu.commerzbank.com/ebicsweb/ebicsweb
+
+###
+POST https://ebicsveu.commerzbank.com/ebicsweb/ebicsweb
+Content-Type: text/xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<ebicsUnsecuredRequest xmlns="http://www.ebics.org/H003" Revision="1" Version="H003">
+    <header authenticate="true">
+        <static>
+            <HostID>CBKEBIX1</HostID>
+            <PartnerID>K0013706</PartnerID>
+            <UserID>F0015982</UserID>
+            <Product Language="de">EBICS Java Kernel 1.0</Product>
+            <OrderDetails>
+                <OrderType>INI</OrderType>
+                <OrderID>A952</OrderID>
+                <OrderAttribute>DZNNN</OrderAttribute>
+            </OrderDetails>
+            <SecurityMedium>0000</SecurityMedium>
+        </static>
+        <mutable>
+        </mutable>
+    </header>
+    <body>
+        <DataTransfer>
+            <OrderData>eNp1k1mPokAUhd8nmf9gmEfSVskiaNAONC4guICo7VtJoaAISLGIv36Imu7p6fRb5TuncpJ7z5Ver+ewUXgpCeKoR7WakGp4kRvjIDr0KGc5fBGp1/7vX5IdHCKU5ak3z3cTr5ql2EtVlKFG/T8iPcrPsqQLQFmWTW8XuKQZpwdgQ9iiHo4u/moq2buDgRAC2AG1B5Pg8IeqsxqN/9O0aB/fhVp6kBUKc++JaohJ17Llb/yhmDHOw5z0ZZOkbGJWJHLs2/7IkXCdOkTJve3SwjKvxUefqIbPqvRiON1m80KrDNG+OAJOBrNNBei47c/I7p1WINiwBdJ2jin6Aeb4eRsVI7j38xUxtKI82NAIFl4pgO16ss5PjA0gKi86VPJMv6LqJDMLHcjbPK9Yq5CP66ClI8jrVsgI2hu2HW2SLkC8uaAhZzu31LKK4rSy3g60sWKQCDY8dtK9nOilzi2O5DZh5IR3uI7M4OluNCVLEfGKGmuZNXLXN53GxXh/3A8ckx64MmMr6aythG2FOGf3PQ9bS3IJXFVLJms88lfhVLyer6x5vijDcTSuqvHplGNh5nUQMsDFTDfq8Ba6uoHhTVgYgtiTwD9D/jr6wTWJIy/K+vJCVu6+D/KxO/DD8qRlcPbsDJ2TPgMZ7gXyLwy3bHFdVuhybJNt8zRkuhBK4NP47Aj4XpLPSq0eZe/LEPIS+Ibv/QM/FVCaozSLvFRT+5O63KwA23XaB7tbHHJ/D2ud74iMBJ6gviLw0xnV4l+wVRx6</OrderData>
+        </DataTransfer>
+    </body>
+</ebicsUnsecuredRequest>
+

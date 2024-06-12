@@ -42,13 +42,12 @@ public class SPRResponseElement extends DefaultResponseElement {
     super(factory, "SPRResponse.xml");
   }
 
-  @Override
   public void build() throws EbicsException {
     String			code;
     String			text;
 
     parse(factory);
-    response = ((EbicsResponseDocument)document).getEbicsResponse();
+    response = ((EbicsResponseDocument) xmlObject).getEbicsResponse();
     code = response.getHeader().getMutable().getReturnCode();
     text = response.getHeader().getMutable().getReportText();
     returnCode = ReturnCode.toReturnCode(code, text);

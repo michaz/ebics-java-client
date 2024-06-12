@@ -45,7 +45,6 @@ public class DownloadTransferResponseElement extends TransferResponseElement {
     super(factory, name);
   }
 
-  @Override
   public void build() throws EbicsException {
     super.build();
 

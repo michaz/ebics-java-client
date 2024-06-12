@@ -71,7 +71,7 @@ class SplitterTest {
 
     private void verifyActualRequestSize(Splitter splitter) throws EbicsException {
         UploadTransferRequestElement fullRequest = prepareActualRequest(splitter);
-        int actualSize = fullRequest.prettyPrint().length;
+        int actualSize = fullRequest.toByteArray().length;
         assertTrue(actualSize < SplitterTest.REQUEST_SIZE_LIMIT);
     }
 

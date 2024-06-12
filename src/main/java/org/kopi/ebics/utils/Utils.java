@@ -19,14 +19,14 @@
 
 package org.kopi.ebics.utils;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
@@ -36,15 +36,18 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathFactory;
 
 import org.apache.xml.security.c14n.Canonicalizer;
 import org.apache.xml.security.utils.IgnoreAllErrorHandler;
-import org.apache.xpath.XPathAPI;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.kopi.ebics.exception.EbicsException;
 import org.kopi.ebics.messages.Messages;
-import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.w3c.dom.traversal.NodeIterator;
 
 
@@ -191,38 +194,31 @@ public final class Utils {
    * 
    * <p>Thus, All the Elements with the attribute authenticate = true and their 
    * sub elements are considered for the canonization process. This is performed 
-   * via the {@link XPathAPI#selectNodeIterator(Node, String) selectNodeIterator(Node, String)}.
-   * 
-   * @param input the byte array XML input.
+   *
    * @return the canonized form of the given XML
    * @throws EbicsException
    */
-  public static byte[] canonize(byte[] input) throws EbicsException {
-    DocumentBuilderFactory 		factory;
-    DocumentBuilder			builder;
-    Document				document;
+  public static byte[] canonize(Node document) throws EbicsException {
     NodeIterator			iter;
     ByteArrayOutputStream		output;
     Node 				node;
 
     try {
-      System.out.println(new String(input));
-      System.out.println("===");
-      factory = DocumentBuilderFactory.newInstance();
-      factory.setNamespaceAware(true);
-      factory.setValidating(true);
-      builder = factory.newDocumentBuilder();
-      builder.setErrorHandler(new IgnoreAllErrorHandler());
-      document = builder.parse(new ByteArrayInputStream(input));
-      iter = XPathAPI.selectNodeIterator(document, "//*[@authenticate='true']");
-      output = new ByteArrayOutputStream();
-      while ((node = iter.nextNode()) != null) {
-        Canonicalizer 		canonicalizer;
+      XPath xpath = XPathFactory.newInstance().newXPath();
 
-        canonicalizer = Canonicalizer.getInstance(Canonicalizer.ALGO_ID_C14N_OMIT_COMMENTS);
-        output.write(canonicalizer.canonicalizeSubtree(node));
+      // Compile an XPath expression
+      XPathExpression expr = xpath.compile("//*[@authenticate='true']");
+      NodeList nodeList = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
+      Set<Node> nodeSet = new HashSet<Node>();
+      for (int i = 0; i < nodeList.getLength(); i++) {
+        node = nodeList.item(i);
+        nodeSet.add(node);
       }
 
+      output = new ByteArrayOutputStream();
+
+      Canonicalizer canonicalizer = Canonicalizer.getInstance(Canonicalizer.ALGO_ID_C14N_OMIT_COMMENTS);
+      canonicalizer.canonicalizeXPathNodeSet(nodeSet, output);
       return output.toByteArray();
     } catch (Exception e) {
       throw new EbicsException(e.getMessage());

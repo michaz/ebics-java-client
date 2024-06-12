@@ -63,13 +63,12 @@ public class KeyManagementResponseElement extends DefaultResponseElement {
     return response.getBody().getDataTransfer().getOrderData().byteArrayValue();
   }
 
-  @Override
   public void build() throws EbicsException {
     String			code;
     String			text;
 
     parse(factory);
-    response = ((EbicsKeyManagementResponseDocument)document).getEbicsKeyManagementResponse();
+    response = ((EbicsKeyManagementResponseDocument) xmlObject).getEbicsKeyManagementResponse();
     code = response.getHeader().getMutable().getReturnCode();
     text = response.getHeader().getMutable().getReportText();
     returnCode = ReturnCode.toReturnCode(code, text);

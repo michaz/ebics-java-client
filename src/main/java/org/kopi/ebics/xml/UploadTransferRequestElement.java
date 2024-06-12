@@ -84,7 +84,7 @@ public class UploadTransferRequestElement extends TransferRequestElement {
 	                                         session.getConfiguration().getVersion(),
 	                                         header,
 	                                         body);
-    document = EbicsXmlFactory.createEbicsRequestDocument(request);
+    xmlObject = EbicsXmlFactory.createEbicsRequestDocument(request);
   }
 
   // --------------------------------------------------------------------

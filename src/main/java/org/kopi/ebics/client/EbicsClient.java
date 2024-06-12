@@ -353,6 +353,7 @@ public class EbicsClient {
 
         try {
             keyManager.sendHPB();
+            //keyManager.printHPB();
             logger.info(messages.getString("hpb.send.success", userId));
         } catch (Exception e) {
             logger.error(messages.getString("hpb.send.error", userId), e);

@@ -21,15 +21,7 @@ package org.kopi.ebics.xml;
 
 import org.kopi.ebics.exception.EbicsException;
 import org.kopi.ebics.interfaces.EbicsOrderType;
-import org.kopi.ebics.schema.h004.EmptyMutableHeaderType;
-import org.kopi.ebics.schema.h004.OrderDetailsType;
-import org.kopi.ebics.schema.h004.ProductElementType;
-import org.kopi.ebics.schema.h004.UnsecuredRequestStaticHeaderType;
-import org.kopi.ebics.schema.h004.EbicsUnsecuredRequestDocument.EbicsUnsecuredRequest;
-import org.kopi.ebics.schema.h004.EbicsUnsecuredRequestDocument.EbicsUnsecuredRequest.Body;
-import org.kopi.ebics.schema.h004.EbicsUnsecuredRequestDocument.EbicsUnsecuredRequest.Header;
-import org.kopi.ebics.schema.h004.EbicsUnsecuredRequestDocument.EbicsUnsecuredRequest.Body.DataTransfer;
-import org.kopi.ebics.schema.h004.EbicsUnsecuredRequestDocument.EbicsUnsecuredRequest.Body.DataTransfer.OrderData;
+import org.kopi.ebics.schema.h004.*;
 import org.kopi.ebics.session.EbicsSession;
 
 /**
@@ -58,46 +50,45 @@ public class UnsecuredRequestElement extends DefaultEbicsRootElement {
     this.orderData = orderData;
   }
 
-  @Override
   public void build() throws EbicsException {
-    Header 					header;
-    Body 					body;
-    EmptyMutableHeaderType 			mutable;
-    UnsecuredRequestStaticHeaderType 		xstatic;
-    ProductElementType 				productType;
-    OrderDetailsType 				orderDetails;
-    DataTransfer 				dataTransfer;
-    OrderData 					orderData;
-    EbicsUnsecuredRequest			request;
 
-    orderDetails = EbicsXmlFactory.createOrderDetailsType("DZNNN",
-						          orderId == null ? session.getUser().getPartner().nextOrderId() : orderId,
-	                                                  orderType.getCode());
+      EbicsUnsecuredRequestDocument newEbicsUnsecuredRequestDocument = EbicsUnsecuredRequestDocument.Factory.newInstance();
+      EbicsUnsecuredRequestDocument.EbicsUnsecuredRequest.Header newHeader = EbicsUnsecuredRequestDocument.EbicsUnsecuredRequest.Header.Factory.newInstance();
+      newHeader.setAuthenticate(true);
+      newHeader.setMutable(EmptyMutableHeaderType.Factory.newInstance());
+      ProductElementType newProductElementType = ProductElementType.Factory.newInstance();
+      newProductElementType.setLanguage(session.getProduct().getLanguage());
+      newProductElementType.setStringValue(session.getProduct().getName());
 
-    productType = EbicsXmlFactory.creatProductElementType(session.getProduct().getLanguage(),
-	                                                  session.getProduct().getName());
+      if (orderId == null) {
+          session.getUser().getPartner().nextOrderId();
+      }
+      OrderDetailsType newOrderDetailsType = OrderDetailsType.Factory.newInstance();
+      newOrderDetailsType.setOrderAttribute("DZNNN");
+      newOrderDetailsType.setOrderType(orderType.getCode());
 
-    xstatic = EbicsXmlFactory.createUnsecuredRequestStaticHeaderType(session.getBankID(),
-								     session.getUser().getPartner().getPartnerId(),
-								     session.getUser().getUserId(),
-	                                                             productType,
-	                                                             orderDetails,
-	                                                             session.getUser().getSecurityMedium());
-    mutable = EbicsXmlFactory.createEmptyMutableHeaderType();
+      UnsecuredRequestStaticHeaderType newUnsecuredRequestStaticHeaderType = UnsecuredRequestStaticHeaderType.Factory.newInstance();
+      newUnsecuredRequestStaticHeaderType.setHostID(session.getBankID());
+      newUnsecuredRequestStaticHeaderType.setPartnerID(session.getUser().getPartner().getPartnerId());
+      newUnsecuredRequestStaticHeaderType.setUserID(session.getUser().getUserId());
+      newUnsecuredRequestStaticHeaderType.setProduct(newProductElementType);
+      newUnsecuredRequestStaticHeaderType.setOrderDetails(newOrderDetailsType);
+      newUnsecuredRequestStaticHeaderType.setSecurityMedium(session.getUser().getSecurityMedium());
 
-    header = EbicsXmlFactory.createHeader(true,
-	                                  mutable,
-	                                  xstatic);
+      newHeader.setStatic(newUnsecuredRequestStaticHeaderType);
 
-    orderData = EbicsXmlFactory.createOrderData(this.orderData);
-    dataTransfer = EbicsXmlFactory.createDataTransfer(orderData);
-    body = EbicsXmlFactory.createBody(dataTransfer);
-    request = EbicsXmlFactory.createEbicsUnsecuredRequest(header,
-	                                                  body,
-	                                                  session.getConfiguration().getRevision(),
-	                                                  session.getConfiguration().getVersion());
+      EbicsUnsecuredRequestDocument.EbicsUnsecuredRequest newEbicsUnsecuredRequest = EbicsUnsecuredRequestDocument.EbicsUnsecuredRequest.Factory.newInstance();
+      newEbicsUnsecuredRequest.setHeader(newHeader);
+      EbicsUnsecuredRequestDocument.EbicsUnsecuredRequest.Body newBody = EbicsUnsecuredRequestDocument.EbicsUnsecuredRequest.Body.Factory.newInstance();
+      newBody.setDataTransfer(EbicsXmlFactory.createDataTransfer(EbicsXmlFactory.createOrderData(this.orderData)));
 
-    document = EbicsXmlFactory.createEbicsUnsecuredRequestDocument(request);
+      newEbicsUnsecuredRequest.setBody(newBody);
+      newEbicsUnsecuredRequest.setRevision(session.getConfiguration().getRevision());
+      newEbicsUnsecuredRequest.setVersion(session.getConfiguration().getVersion());
+
+      newEbicsUnsecuredRequestDocument.setEbicsUnsecuredRequest(newEbicsUnsecuredRequest);
+
+      xmlObject = newEbicsUnsecuredRequestDocument;
   }
 
   @Override

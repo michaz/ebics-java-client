@@ -149,7 +149,7 @@ public class DownloadInitializationRequestElement extends InitializationRequestE
                                                  session.getConfiguration().getVersion(),
                                                  header,
                                                  body);
-    document = EbicsXmlFactory.createEbicsRequestDocument(request);
+    xmlObject = EbicsXmlFactory.createEbicsRequestDocument(request);
   }
 
   // --------------------------------------------------------------------

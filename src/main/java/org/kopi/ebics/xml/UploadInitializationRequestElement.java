@@ -168,7 +168,7 @@ public class UploadInitializationRequestElement extends InitializationRequestEle
     encryptionPubKeyDigest = EbicsXmlFactory.createEncryptionPubKeyDigest(session.getConfiguration().getEncryptionVersion(),
 								          "http://www.w3.org/2001/04/xmlenc#sha256",
 								          decodeHex(session.getUser().getPartner().getBank().getE002Digest()));
-    signatureData = EbicsXmlFactory.createSignatureData(true, Utils.encrypt(Utils.zip(userSignature.prettyPrint()), keySpec));
+      signatureData = EbicsXmlFactory.createSignatureData(true, Utils.encrypt(Utils.zip(userSignature.toByteArray()), keySpec));
     dataEncryptionInfo = EbicsXmlFactory.createDataEncryptionInfo(true,
 	                                                          encryptionPubKeyDigest,
 	                                                          generateTransactionKey());
@@ -178,14 +178,13 @@ public class UploadInitializationRequestElement extends InitializationRequestEle
 	                                         session.getConfiguration().getVersion(),
 	                                         header,
 	                                         body);
-    document = EbicsXmlFactory.createEbicsRequestDocument(request);
+    xmlObject = EbicsXmlFactory.createEbicsRequestDocument(request);
   }
 
   @Override
   public byte[] toByteArray() {
-    setSaveSuggestedPrefixes("http://www.ebics.org/H003", "");
 
-    return super.toByteArray();
+      return super.toByteArray();
   }
 
   /**
