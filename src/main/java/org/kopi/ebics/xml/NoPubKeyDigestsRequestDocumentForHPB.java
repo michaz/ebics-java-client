@@ -27,11 +27,13 @@ import java.util.Calendar;
 
 import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlObject;
+import org.apache.xmlbeans.XmlOptions;
 import org.kopi.ebics.exception.EbicsException;
 import org.kopi.ebics.schema.h004.*;
 import org.kopi.ebics.schema.h004.EbicsNoPubKeyDigestsRequestDocument.EbicsNoPubKeyDigestsRequest;
 import org.kopi.ebics.schema.h004.EbicsNoPubKeyDigestsRequestDocument.EbicsNoPubKeyDigestsRequest.Body;
 import org.kopi.ebics.schema.h004.EbicsNoPubKeyDigestsRequestDocument.EbicsNoPubKeyDigestsRequest.Header;
+import org.kopi.ebics.schema.xmldsig.SignatureType;
 import org.kopi.ebics.session.EbicsSession;
 import org.kopi.ebics.utils.Utils;
 
@@ -53,8 +55,11 @@ public class NoPubKeyDigestsRequestDocumentForHPB extends DefaultEbicsRootElemen
   }
 
   public static NoPubKeyDigestsRequestDocumentForHPB create(EbicsSession session) throws XmlException, IOException {
+    System.out.println("===create");
     NoPubKeyDigestsRequestDocumentForHPB noPubKeyDigestsRequestDocumentForHPB = new NoPubKeyDigestsRequestDocumentForHPB(session);
     noPubKeyDigestsRequestDocumentForHPB.build();
+    System.out.println("===dump before signing");
+    noPubKeyDigestsRequestDocumentForHPB.xmlObject.save(System.out);
     Signature authSignature = new Signature(session.getUser(), noPubKeyDigestsRequestDocumentForHPB.getDigest());
     authSignature.build();
     noPubKeyDigestsRequestDocumentForHPB.setAuthSignature(authSignature);
@@ -112,26 +117,16 @@ public class NoPubKeyDigestsRequestDocumentForHPB extends DefaultEbicsRootElemen
     newHeader.setMutable(EmptyMutableHeaderType.Factory.newInstance());
     newHeader.setStatic(newNoPubKeyDigestsRequestStaticHeaderType);
 
-
-    EbicsNoPubKeyDigestsRequestDocument newEbicsNoPubKeyDigestsRequestDocument = EbicsNoPubKeyDigestsRequestDocument.Factory.parse(
-"""
-  <ebics:ebicsNoPubKeyDigestsRequest xmlns:ebics="urn:org:ebics:H004" xmlns:ds="http://www.w3.org/2000/09/xmldsig#"/>
-""");
-    System.out.println("pupsaffe");
-    System.out.println("pupsaffe");
-    newEbicsNoPubKeyDigestsRequestDocument.save(System.out);
-    EbicsNoPubKeyDigestsRequest newEbicsNoPubKeyDigestsRequest = newEbicsNoPubKeyDigestsRequestDocument.getEbicsNoPubKeyDigestsRequest();
+    EbicsNoPubKeyDigestsRequestDocument newEbicsNoPubKeyDigestsRequestDocument = EbicsNoPubKeyDigestsRequestDocument.Factory.newInstance();
+    EbicsNoPubKeyDigestsRequest newEbicsNoPubKeyDigestsRequest = newEbicsNoPubKeyDigestsRequestDocument.addNewEbicsNoPubKeyDigestsRequest();
     newEbicsNoPubKeyDigestsRequest.setRevision(session.getConfiguration().getRevision());
     newEbicsNoPubKeyDigestsRequest.setVersion(session.getConfiguration().getVersion());
     newEbicsNoPubKeyDigestsRequest.setHeader(newHeader);
     newEbicsNoPubKeyDigestsRequest.setBody(Body.Factory.newInstance());
-
-    newEbicsNoPubKeyDigestsRequestDocument.setEbicsNoPubKeyDigestsRequest(newEbicsNoPubKeyDigestsRequest);
-    System.out.println("pupsaffe");
-    System.out.println("pupsaffe");
-    newEbicsNoPubKeyDigestsRequestDocument.save(System.out);
-    System.out.println("dildo");
-    System.out.println("dildo");
+    SignatureType signatureType = newEbicsNoPubKeyDigestsRequest.addNewAuthSignature();
+    signatureType.addNewSignedInfo();
+    signatureType.addNewSignatureValue();
+    newEbicsNoPubKeyDigestsRequestDocument.save(System.out, new XmlOptions().setSavePrettyPrint());
     xmlObject = newEbicsNoPubKeyDigestsRequestDocument;
   }
 

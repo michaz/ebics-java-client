@@ -19,40 +19,15 @@
 
 package org.kopi.ebics.client;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.net.URL;
-import java.security.GeneralSecurityException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.kopi.ebics.exception.EbicsException;
 import org.kopi.ebics.exception.NoDownloadDataAvailableException;
-import org.kopi.ebics.interfaces.Configuration;
-import org.kopi.ebics.interfaces.EbicsBank;
-import org.kopi.ebics.interfaces.EbicsOrderType;
-import org.kopi.ebics.interfaces.EbicsUser;
-import org.kopi.ebics.interfaces.InitLetter;
-import org.kopi.ebics.interfaces.LetterManager;
-import org.kopi.ebics.interfaces.PasswordCallback;
+import org.kopi.ebics.interfaces.*;
 import org.kopi.ebics.io.IOUtils;
+import org.kopi.ebics.letter.AbstractInitLetter;
 import org.kopi.ebics.messages.Messages;
 import org.kopi.ebics.schema.h004.OrderAttributeType;
 import org.kopi.ebics.session.DefaultConfiguration;
@@ -60,7 +35,12 @@ import org.kopi.ebics.session.EbicsSession;
 import org.kopi.ebics.session.OrderType;
 import org.kopi.ebics.session.Product;
 import org.kopi.ebics.utils.Constants;
-import org.kopi.ebics.letter.AbstractInitLetter;
+import org.kopi.ebics.xml.NoPubKeyDigestsRequestDocumentForHPB;
+
+import java.io.*;
+import java.net.URL;
+import java.security.GeneralSecurityException;
+import java.util.*;
 
 /**
  * The ebics client application. Performs necessary tasks to contact the ebics
@@ -350,15 +330,15 @@ public class EbicsClient {
 
         configuration.getTraceManager().setTraceDirectory(
             configuration.getTransferTraceDirectory(user));
+        NoPubKeyDigestsRequestDocumentForHPB request = NoPubKeyDigestsRequestDocumentForHPB.create(session);
 
-        try {
-            keyManager.sendHPB();
-            //keyManager.printHPB();
-            logger.info(messages.getString("hpb.send.success", userId));
-        } catch (Exception e) {
-            logger.error(messages.getString("hpb.send.error", userId), e);
-            throw e;
-        }
+//        try {
+//            keyManager.sendHPB();
+//            logger.info(messages.getString("hpb.send.success", userId));
+//        } catch (Exception e) {
+//            logger.error(messages.getString("hpb.send.error", userId), e);
+//            throw e;
+//        }
     }
 
     /**
