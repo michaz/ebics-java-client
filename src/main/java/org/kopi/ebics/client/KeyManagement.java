@@ -95,7 +95,7 @@ public class KeyManagement {
         System.out.println(new String(content));
         int httpCode = sender.send(new ByteArrayContentFactory(content));
         Utils.checkHttpCode(httpCode);
-        KeyManagementResponseElement response = new KeyManagementResponseElement(sender.getResponseBody(), "HBPResponse");
+        KeyManagementResponseElement response = new KeyManagementResponseElement(sender.getResponseBody(), "HPBResponse");
         response.build();
         session.getConfiguration().getTraceManager().trace(response);
         response.report();
