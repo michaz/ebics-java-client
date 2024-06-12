@@ -98,7 +98,9 @@ public class NoPubKeyDigestsRequestDocumentForHPB extends DefaultEbicsRootElemen
     documentBuilderFactory.setNamespaceAware(true);
     DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
     Document document = documentBuilder.parse(new ByteArrayInputStream(byteArrayOutputStream.toString(StandardCharsets.UTF_8).getBytes(StandardCharsets.UTF_8)));
-
+    String s = new String(byteArrayOutputStream.toByteArray());
+    String dildo = s.substring(s.indexOf("<header"), s.indexOf("</header>")+9);
+    System.out.println("!"+dildo+"!");
     System.out.println("===operate on it");
     XMLSignature xmlSignature = new XMLSignature(document, "", "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256", Canonicalizer.ALGO_ID_C14N_OMIT_COMMENTS);
     Transforms trans = new Transforms(document);
@@ -109,7 +111,7 @@ public class NoPubKeyDigestsRequestDocumentForHPB extends DefaultEbicsRootElemen
       public XMLSignatureInput engineResolveURI(ResourceResolverContext context) throws ResourceResolverException {
         if (context.uriToResolve.equals("#xpointer(//*[@authenticate='true'])")) {
           Node headerNode = document.getElementsByTagNameNS("urn:org:ebics:H004", "header").item(0);
-          XMLSignatureNodeInput header = new XMLSignatureNodeInput(headerNode);
+          XMLSignatureByteInput header = new XMLSignatureByteInput(dildo.getBytes(StandardCharsets.UTF_8));
           header.setSourceURI("#xpointer(//*[@authenticate='true'])");
           return header;
         } else {
