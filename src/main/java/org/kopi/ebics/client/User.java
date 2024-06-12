@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.security.GeneralSecurityException;
+import java.security.Key;
 import java.security.PrivateKey;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
@@ -554,6 +555,11 @@ public class User implements EbicsUser, Savable {
     }
 
     return decryptData(encryptedData, outputStream.toByteArray());
+  }
+
+  @Override
+  public Key getX002PrivateKey() {
+    return x002PrivateKey;
   }
 
   /**

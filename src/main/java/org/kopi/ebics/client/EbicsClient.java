@@ -330,15 +330,14 @@ public class EbicsClient {
 
         configuration.getTraceManager().setTraceDirectory(
             configuration.getTransferTraceDirectory(user));
-        NoPubKeyDigestsRequestDocumentForHPB request = NoPubKeyDigestsRequestDocumentForHPB.create(session);
 
-//        try {
-//            keyManager.sendHPB();
-//            logger.info(messages.getString("hpb.send.success", userId));
-//        } catch (Exception e) {
-//            logger.error(messages.getString("hpb.send.error", userId), e);
-//            throw e;
-//        }
+        try {
+            keyManager.sendHPB();
+            logger.info(messages.getString("hpb.send.success", userId));
+        } catch (Exception e) {
+            logger.error(messages.getString("hpb.send.error", userId), e);
+            throw e;
+        }
     }
 
     /**

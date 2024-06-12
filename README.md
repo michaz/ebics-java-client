@@ -69,3 +69,8 @@ Main differences with this fork:
 - When I correct those errors in my local version of the schema, XMLBeans still won't compile them
   but now it won't say why.
 - Backtrack to original version of XMLBeans.
+- When I use XPath on a namespace-aware DOM, and select the element with authenticate=true, 
+  I of course get a DOM node that has a namespace tag, and that is the element that 
+  the canonicalizer then sees. So while the canonicalizer doesn't touch namespace tags,
+  the canonicalization INCLUDING the XPath selection DOES touch namespace tags. I am not sure
+  if that is intended and such things will verify correctly.

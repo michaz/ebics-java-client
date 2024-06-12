@@ -33,6 +33,12 @@ import java.util.Iterator;
 import org.apache.xml.security.c14n.CanonicalizationException;
 import org.apache.xml.security.c14n.Canonicalizer;
 import org.apache.xml.security.c14n.InvalidCanonicalizerException;
+import org.apache.xml.security.exceptions.XMLSecurityException;
+import org.apache.xml.security.signature.*;
+import org.apache.xml.security.transforms.Transforms;
+import org.apache.xml.security.utils.resolver.ResourceResolverContext;
+import org.apache.xml.security.utils.resolver.ResourceResolverException;
+import org.apache.xml.security.utils.resolver.ResourceResolverSpi;
 import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlOptions;
 import org.kopi.ebics.exception.EbicsException;
@@ -44,6 +50,8 @@ import org.kopi.ebics.schema.xmldsig.SignatureType;
 import org.kopi.ebics.session.EbicsSession;
 import org.kopi.ebics.utils.Utils;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
@@ -70,7 +78,7 @@ public class NoPubKeyDigestsRequestDocumentForHPB extends DefaultEbicsRootElemen
     super(session);
   }
 
-  public static NoPubKeyDigestsRequestDocumentForHPB create(EbicsSession session) throws XmlException, IOException, ParserConfigurationException, SAXException, XPathExpressionException, InvalidCanonicalizerException, CanonicalizationException {
+  public static Document create(EbicsSession session) throws XmlException, IOException, ParserConfigurationException, SAXException, XPathExpressionException, XMLSecurityException {
     System.out.println("===create");
     EbicsNoPubKeyDigestsRequestDocument newEbicsNoPubKeyDigestsRequestDocument = createShit(session);
 
@@ -78,60 +86,53 @@ public class NoPubKeyDigestsRequestDocumentForHPB extends DefaultEbicsRootElemen
     var suggestedPrefixes = new HashMap<String, String>();
     suggestedPrefixes.put("urn:org:ebics:H004", "ebics");
     suggestedPrefixes.put("http://www.w3.org/2000/09/xmldsig#", "ds");
-    XmlOptions opts = new XmlOptions().setSaveSuggestedPrefixes(suggestedPrefixes).setSavePrettyPrint();
-    opts.setSaveSuggestedPrefixes(suggestedPrefixes);
+    XmlOptions opts = new XmlOptions().setUseDefaultNamespace().setSavePrettyPrint().setSaveAggressiveNamespaces();
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
     newEbicsNoPubKeyDigestsRequestDocument.save(byteArrayOutputStream, opts);
     byteArrayOutputStream.writeTo(System.out);
     System.out.println();
     System.out.println();
 
-    System.out.println("===selecting stuff to digest");
+    System.out.println("===reconstructing DOM, namespace aware");
     DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
     documentBuilderFactory.setNamespaceAware(true);
-
     DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
     Document document = documentBuilder.parse(new ByteArrayInputStream(byteArrayOutputStream.toString(StandardCharsets.UTF_8).getBytes(StandardCharsets.UTF_8)));
-    XPath xpath = XPathFactory.newInstance().newXPath();
-    HashMap<String, String> prefMap = new HashMap<>() {{
-        put("ebics", "urn:org:ebics:H004");
-        put("ds", "http://www.w3.org/2000/09/xmldsig#");
-    }};
-    xpath.setNamespaceContext(new NamespaceContext() {
+
+    System.out.println("===operate on it");
+    XMLSignature xmlSignature = new XMLSignature(document, "", "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256", Canonicalizer.ALGO_ID_C14N_OMIT_COMMENTS);
+    Transforms trans = new Transforms(document);
+    trans.addTransform(Canonicalizer.ALGO_ID_C14N_OMIT_COMMENTS);
+    xmlSignature.addDocument("#xpointer(//*[@authenticate='true'])", trans, "http://www.w3.org/2001/04/xmlenc#sha256", "", "");
+    xmlSignature.addResourceResolver(new ResourceResolverSpi() {
       @Override
-      public String getNamespaceURI(String prefix) {
-        return prefMap.get(prefix);
+      public XMLSignatureInput engineResolveURI(ResourceResolverContext context) throws ResourceResolverException {
+        if (context.uriToResolve.equals("#xpointer(//*[@authenticate='true'])")) {
+          Node headerNode = document.getElementsByTagNameNS("urn:org:ebics:H004", "header").item(0);
+          XMLSignatureNodeInput header = new XMLSignatureNodeInput(headerNode);
+          header.setSourceURI("#xpointer(//*[@authenticate='true'])");
+          return header;
+        } else {
+          throw new RuntimeException();
+        }
       }
 
       @Override
-      public String getPrefix(String namespaceURI) {
-        throw new RuntimeException();
-      }
-
-      @Override
-      public Iterator<String> getPrefixes(String namespaceURI) {
-        throw new RuntimeException();
+      public boolean engineCanResolveURI(ResourceResolverContext context) {
+        return context.uriToResolve.equals("#xpointer(//*[@authenticate='true'])");
       }
     });
-    XPathExpression expr = xpath.compile("//*[@authenticate='true']");
-    Node node = (Node) expr.evaluate(document, XPathConstants.NODE);
-    System.out.println(nodeToString(node));
 
-    System.out.println("===canonicalizing stuff to digest");
-    Canonicalizer canonicalizer = Canonicalizer.getInstance(Canonicalizer.ALGO_ID_C14N_OMIT_COMMENTS);
-    ByteArrayOutputStream output = new ByteArrayOutputStream();
-    canonicalizer.canonicalizeSubtree(node, output);
-    byte[] canonicalizedPartsThatNeedAuthentication = output.toByteArray();
-    System.out.println(new String(canonicalizedPartsThatNeedAuthentication));
-    try {
-      MessageDigest digester = MessageDigest.getInstance("SHA-256", "BC");
-      byte[] digest = digester.digest(canonicalizedPartsThatNeedAuthentication);
-      Signature authSignature = new Signature(session.getUser(), digest);
-      authSignature.build();
-      return null;
-    } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
-      throw new EbicsException(e.getMessage());
-    }
+    xmlSignature.sign(session.getUser().getX002PrivateKey());
+    Node rootNode = document.getElementsByTagNameNS("urn:org:ebics:H004", "AuthSignature").item(0);
+    rootNode.appendChild(xmlSignature.getSignedInfo().getElement());
+    Node signatureValue = xmlSignature.getElement().getElementsByTagNameNS("http://www.w3.org/2000/09/xmldsig#", "SignatureValue").item(0);
+    String wurst = signatureValue.getTextContent().replaceAll("\r\n", "");
+    String replacedText = wurst.substring(1, wurst.length()-1);
+    System.out.println(replacedText);
+    signatureValue.setTextContent(replacedText);
+    rootNode.appendChild(signatureValue);
+    return document;
   }
 
   private static EbicsNoPubKeyDigestsRequestDocument createShit(EbicsSession session) {
@@ -146,6 +147,7 @@ public class NoPubKeyDigestsRequestDocumentForHPB extends DefaultEbicsRootElemen
     staticHeader.setNonce(Utils.generateNonce());
     staticHeader.setTimestamp(Calendar.getInstance());
     staticHeader.setPartnerID(session.getUser().getPartner().getPartnerId());
+    staticHeader.setSystemID(session.getUser().getUserId());
     staticHeader.setUserID(session.getUser().getUserId());
     ProductElementType product = staticHeader.addNewProduct();
     product.setLanguage(session.getProduct().getLanguage());
@@ -156,15 +158,16 @@ public class NoPubKeyDigestsRequestDocumentForHPB extends DefaultEbicsRootElemen
     staticHeader.setSecurityMedium(session.getUser().getSecurityMedium());
     newHeader.addNewMutable();
     document.addNewBody();
-    SignatureType authSignature1 = document.addNewAuthSignature();
-    SignedInfoType signedInfo = authSignature1.addNewSignedInfo();
-    signedInfo.addNewSignatureMethod().setAlgorithm("http://www.w3.org/2001/04/xmldsig-more#rsa-sha256");
-    signedInfo.addNewCanonicalizationMethod().setAlgorithm(Canonicalizer.ALGO_ID_C14N_OMIT_COMMENTS);
-    ReferenceType reference = signedInfo.addNewReference();
-    reference.setURI("#xpointer(//*[@authenticate='true'])");
-    reference.addNewTransforms().addNewTransform().setAlgorithm(Canonicalizer.ALGO_ID_C14N_OMIT_COMMENTS);
-    reference.addNewDigestMethod().setAlgorithm("http://www.w3.org/2001/04/xmlenc#sha256");
-    authSignature1.addNewSignatureValue();
+    document.addNewAuthSignature();
+//    SignatureType authSignature1 = document.addNewAuthSignature();
+//    SignedInfoType signedInfo = authSignature1.addNewSignedInfo();
+//    signedInfo.addNewSignatureMethod().setAlgorithm("http://www.w3.org/2001/04/xmldsig-more#rsa-sha256");
+//    signedInfo.addNewCanonicalizationMethod().setAlgorithm(Canonicalizer.ALGO_ID_C14N_OMIT_COMMENTS);
+//    ReferenceType reference = signedInfo.addNewReference();
+//    reference.setURI("#xpointer(//*[@authenticate='true'])");
+//    reference.addNewTransforms().addNewTransform().setAlgorithm(Canonicalizer.ALGO_ID_C14N_OMIT_COMMENTS);
+//    reference.addNewDigestMethod().setAlgorithm("http://www.w3.org/2001/04/xmlenc#sha256");
+//    authSignature1.addNewSignatureValue();
     return newEbicsNoPubKeyDigestsRequestDocument;
   }
 
@@ -183,10 +186,6 @@ public class NoPubKeyDigestsRequestDocumentForHPB extends DefaultEbicsRootElemen
     }
   }
 
-  /**
-   * Sets the authentication signature of the <code>NoPubKeyDigestsRequestElement</code>
-   * @param authSignature the the authentication signature.
-   */
   public void setAuthSignature(Signature authSignature) {
     ((EbicsNoPubKeyDigestsRequestDocument) xmlObject).getEbicsNoPubKeyDigestsRequest().setAuthSignature(authSignature.getSignatureType());
   }

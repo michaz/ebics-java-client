@@ -21,6 +21,7 @@ package org.kopi.ebics.interfaces;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.security.Key;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
@@ -175,4 +176,6 @@ public interface EbicsUser {
    */
   public byte[] decrypt(byte[] encryptedKey, byte[] transactionKey)
     throws GeneralSecurityException, IOException, EbicsException;
+
+  Key getX002PrivateKey();
 }

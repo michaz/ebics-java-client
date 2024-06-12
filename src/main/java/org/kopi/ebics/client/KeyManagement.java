@@ -29,6 +29,7 @@ import java.security.interfaces.RSAPublicKey;
 
 import org.apache.xml.security.c14n.CanonicalizationException;
 import org.apache.xml.security.c14n.InvalidCanonicalizerException;
+import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xmlbeans.XmlException;
 import org.kopi.ebics.certificate.KeyStoreManager;
 import org.kopi.ebics.certificate.KeyUtil;
@@ -38,6 +39,7 @@ import org.kopi.ebics.io.ByteArrayContentFactory;
 import org.kopi.ebics.session.EbicsSession;
 import org.kopi.ebics.utils.Utils;
 import org.kopi.ebics.xml.*;
+import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -90,16 +92,12 @@ public class KeyManagement {
         response.report();
     }
 
-    public void sendHPB() throws IOException, GeneralSecurityException, EbicsException, XmlException, ParserConfigurationException, SAXException, XPathExpressionException, InvalidCanonicalizerException, CanonicalizationException {
+    public void sendHPB() throws IOException, GeneralSecurityException, EbicsException, XmlException, ParserConfigurationException, SAXException, XPathExpressionException, XMLSecurityException {
         HttpRequestSender sender = new HttpRequestSender(session);
-        NoPubKeyDigestsRequestDocumentForHPB request = NoPubKeyDigestsRequestDocumentForHPB.create(session);
-        session.getConfiguration().getTraceManager().trace(request);
-        byte[] content = request.xmlObject.newInputStream().readAllBytes();
-        System.out.println("=====");
-        System.out.println("SENDUNG");
-        System.out.println("=====");
-        System.out.println(new String(content));
-        int httpCode = sender.send(new ByteArrayContentFactory(content));
+        Document request = NoPubKeyDigestsRequestDocumentForHPB.create(session);
+        String requestString = nodeToString(request);
+        System.out.println(requestString);
+        int httpCode = sender.send(new ByteArrayContentFactory(requestString.getBytes()));
         Utils.checkHttpCode(httpCode);
         KeyManagementResponseElement response = new KeyManagementResponseElement(sender.getResponseBody(), "HPBResponse");
         response.build();
@@ -129,6 +127,21 @@ public class KeyManagement {
             session.getUser().getPartner().getBank().setBankKeys(e002PubKey, x002PubKey);
             session.getUser().getPartner().getBank().setDigests(KeyUtil.getKeyDigest(e002PubKey), KeyUtil.getKeyDigest(x002PubKey));
             keystoreManager.save(new FileOutputStream(path + File.separator + session.getBankID() + ".p12"));
+        }
+    }
+
+    private static String nodeToString(org.w3c.dom.Node node) {
+        try {
+            javax.xml.transform.Transformer transformer = javax.xml.transform.TransformerFactory.newInstance().newTransformer();
+            transformer.setOutputProperty(javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION, "yes");
+            javax.xml.transform.dom.DOMSource source = new javax.xml.transform.dom.DOMSource(node);
+            java.io.StringWriter sw = new java.io.StringWriter();
+            javax.xml.transform.stream.StreamResult result = new javax.xml.transform.stream.StreamResult(sw);
+            transformer.transform(source, result);
+            return sw.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
