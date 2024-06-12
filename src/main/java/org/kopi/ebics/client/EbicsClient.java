@@ -382,7 +382,7 @@ public class EbicsClient {
             configuration.getTransferTraceDirectory(user));
 
         try {
-            keyManager.lockAccess();
+            keyManager.sendSPR();
         } catch (Exception e) {
             logger.error(messages.getString("spr.send.error", userId), e);
             throw e;

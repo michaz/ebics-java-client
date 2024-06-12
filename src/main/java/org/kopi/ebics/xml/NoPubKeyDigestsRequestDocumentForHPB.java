@@ -52,6 +52,20 @@ public class NoPubKeyDigestsRequestDocumentForHPB extends DefaultEbicsRootElemen
     super(session);
   }
 
+  public static NoPubKeyDigestsRequestDocumentForHPB create(EbicsSession session) throws XmlException, IOException {
+    NoPubKeyDigestsRequestDocumentForHPB noPubKeyDigestsRequestDocumentForHPB = new NoPubKeyDigestsRequestDocumentForHPB(session);
+    noPubKeyDigestsRequestDocumentForHPB.build();
+    Signature authSignature = new Signature(session.getUser(), noPubKeyDigestsRequestDocumentForHPB.getDigest());
+    authSignature.build();
+    noPubKeyDigestsRequestDocumentForHPB.setAuthSignature(authSignature);
+    authSignature.sign(noPubKeyDigestsRequestDocumentForHPB.xmlObject);
+    noPubKeyDigestsRequestDocumentForHPB.setAuthSignature(authSignature);
+
+    System.out.println(noPubKeyDigestsRequestDocumentForHPB.xmlObject);
+    System.out.println(new String(noPubKeyDigestsRequestDocumentForHPB.toByteArray()));
+    return noPubKeyDigestsRequestDocumentForHPB;
+  }
+
   /**
    * Returns the digest value of the authenticated XML portions.
    * @return  the digest value.

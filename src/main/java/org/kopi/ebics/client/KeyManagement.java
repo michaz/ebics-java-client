@@ -38,179 +38,111 @@ import org.kopi.ebics.utils.Utils;
 import org.kopi.ebics.xml.*;
 
 
-/**
- * Everything that has to do with key handling.
- * If you have a totally new account use <code>sendINI()</code> and <code>sendHIA()</code> to send you newly created keys to the bank.
- * Then wait until the bank activated your keys.
- * If you are migrating from FTAM. Just send HPB, your EBICS account should be usable without delay.
- *
- * @author Hachani
- *
- */
 public class KeyManagement {
 
-  /**
-   * Constructs a new <code>KeyManagement</code> instance
-   * with a given ebics session
-   * @param session the ebics session
-   */
-  public KeyManagement(EbicsSession session) {
-    this.session = session;
-  }
+  private EbicsSession session;
 
-  /**
-   * Sends the user's signature key (A005) to the bank.
-   * After successful operation the user is in state "initialized".
-   * @param orderId the order ID. Let it null to generate a random one.
-   * @throws EbicsException server generated error message
-   * @throws IOException communication error
-   */
-  public void sendINI(String orderId) throws EbicsException, IOException {
-    INIRequestElement			request;
-    KeyManagementResponseElement	response;
-    HttpRequestSender			sender;
-    int					httpCode;
-
-    sender = new HttpRequestSender(session);
-    request = new INIRequestElement(session, orderId);
-    request.build();
-    request.validate();
-    session.getConfiguration().getTraceManager().trace(request);
-    httpCode = sender.send(new ByteArrayContentFactory(request.toByteArray()));
-    Utils.checkHttpCode(httpCode);
-    response = new KeyManagementResponseElement(sender.getResponseBody(), "INIResponse");
-    response.build();
-    session.getConfiguration().getTraceManager().trace(response);
-    response.report();
-  }
-
-  /**
-   * Sends the public part of the protocol keys to the bank.
-   * @param orderId the order ID. Let it null to generate a random one.
-   * @throws IOException communication error
-   * @throws EbicsException server generated error message
-   */
-  public void sendHIA(String orderId) throws IOException, EbicsException {
-    HIARequestElement			request;
-    KeyManagementResponseElement	response;
-    HttpRequestSender			sender;
-    int					httpCode;
-
-    sender = new HttpRequestSender(session);
-    request = new HIARequestElement(session, orderId);
-    request.build();
-    request.validate();
-    session.getConfiguration().getTraceManager().trace(request);
-    httpCode = sender.send(new ByteArrayContentFactory(request.toByteArray()));
-    Utils.checkHttpCode(httpCode);
-    response = new KeyManagementResponseElement(sender.getResponseBody(), "HIAResponse");
-    response.build();
-    session.getConfiguration().getTraceManager().trace(response);
-    response.report();
-  }
-
-  public void printHPB() throws EbicsException, XmlException, IOException {
-    HPBRequestDocument request = new HPBRequestDocument(session);
-    request.build();
-    request.validate();
-    System.out.println("===");
-    System.out.println(new String(request.toByteArray()));
-  }
-
-  /**
-   * Sends encryption and authentication keys to the bank.
-   * This order is only allowed for a new user at the bank side that has been created by copying the A005 key.
-   * The keys will be activated immediately after successful completion of the transfer.
-   * @throws IOException communication error
-   * @throws GeneralSecurityException data decryption error
-   * @throws EbicsException server generated error message
-   */
-  public void sendHPB() throws IOException, GeneralSecurityException, EbicsException, XmlException {
-    HPBRequestDocument request;
-    KeyManagementResponseElement	response;
-    HttpRequestSender			sender;
-    HPBResponseOrderDataElement		orderData;
-    ContentFactory			factory;
-    KeyStoreManager			keystoreManager;
-    String				path;
-    RSAPublicKey			e002PubKey;
-    RSAPublicKey			x002PubKey;
-    int					httpCode;
-
-    sender = new HttpRequestSender(session);
-    request = new HPBRequestDocument(session);
-    request.build();
-    request.validate();
-    session.getConfiguration().getTraceManager().trace(request);
-    byte[] content = request.getMotherfuckingDocument().newInputStream().readAllBytes();
-    System.out.println("=====");
-    System.out.println("SENDUNG");
-    System.out.println("=====");
-    System.out.println(new String(content));
-    httpCode = sender.send(new ByteArrayContentFactory(content));
-    Utils.checkHttpCode(httpCode);
-    response = new KeyManagementResponseElement(sender.getResponseBody(), "HBPResponse");
-    response.build();
-    session.getConfiguration().getTraceManager().trace(response);
-    response.report();
-    factory = new ByteArrayContentFactory(Utils.unzip(session.getUser().decrypt(response.getOrderData(), response.getTransactionKey())));
-    orderData = new HPBResponseOrderDataElement(factory);
-    orderData.build();
-    session.getConfiguration().getTraceManager().trace(orderData);
-    keystoreManager = new KeyStoreManager();
-    path = session.getConfiguration().getKeystoreDirectory(session.getUser());
-    keystoreManager.load("" , session.getUser().getPasswordCallback().getPassword());
-
-    if (session.getUser().getPartner().getBank().useCertificate())
-    {
-        e002PubKey = keystoreManager.getPublicKey(new ByteArrayInputStream(orderData.getBankE002Certificate()));
-        x002PubKey = keystoreManager.getPublicKey(new ByteArrayInputStream(orderData.getBankX002Certificate()));
-        session.getUser().getPartner().getBank().setBankKeys(e002PubKey, x002PubKey);
-        session.getUser().getPartner().getBank().setDigests(KeyUtil.getKeyDigest(e002PubKey), KeyUtil.getKeyDigest(x002PubKey));
-        keystoreManager.setCertificateEntry(session.getBankID() + "-E002", new ByteArrayInputStream(orderData.getBankE002Certificate()));
-        keystoreManager.setCertificateEntry(session.getBankID() + "-X002", new ByteArrayInputStream(orderData.getBankX002Certificate()));
-        keystoreManager.save(new FileOutputStream(path + File.separator + session.getBankID() + ".p12"));
+    public KeyManagement(EbicsSession session) {
+        this.session = session;
     }
-    else
-    {
-        e002PubKey = keystoreManager.getPublicKey(new BigInteger(orderData.getBankE002PublicKeyExponent()), new BigInteger(orderData.getBankE002PublicKeyModulus()));
-        x002PubKey = keystoreManager.getPublicKey(new BigInteger(orderData.getBankX002PublicKeyExponent()), new BigInteger(orderData.getBankX002PublicKeyModulus()));
-        session.getUser().getPartner().getBank().setBankKeys(e002PubKey, x002PubKey);
-        session.getUser().getPartner().getBank().setDigests(KeyUtil.getKeyDigest(e002PubKey), KeyUtil.getKeyDigest(x002PubKey));
-        //keystoreManager.setCertificateEntry(session.getBankID() + "-E002", new ByteArrayInputStream(orderData.getBankE002Certificate()));
-        //keystoreManager.setCertificateEntry(session.getBankID() + "-X002", new ByteArrayInputStream(orderData.getBankX002Certificate()));
-        keystoreManager.save(new FileOutputStream(path + File.separator + session.getBankID() + ".p12"));
+
+    public void sendINI(String orderId) throws EbicsException, IOException {
+        INIRequestElement request;
+        KeyManagementResponseElement response;
+        HttpRequestSender sender;
+        int httpCode;
+
+        sender = new HttpRequestSender(session);
+        request = new INIRequestElement(session, orderId);
+        request.build();
+        request.validate();
+        session.getConfiguration().getTraceManager().trace(request);
+        httpCode = sender.send(new ByteArrayContentFactory(request.toByteArray()));
+        Utils.checkHttpCode(httpCode);
+        response = new KeyManagementResponseElement(sender.getResponseBody(), "INIResponse");
+        response.build();
+        session.getConfiguration().getTraceManager().trace(response);
+        response.report();
     }
-  }
 
-  /**
-   * Sends the SPR order to the bank.
-   * After that you have to start over with sending INI and HIA.
-   * @throws IOException Communication exception
-   * @throws EbicsException Error message generated by the bank.
-   */
-  public void lockAccess() throws IOException, EbicsException {
-    HttpRequestSender			sender;
-    SPRRequestElement			request;
-    SPRResponseElement			response;
-    int					httpCode;
+    public void sendHIA(String orderId) throws IOException, EbicsException {
+        HIARequestElement request;
+        KeyManagementResponseElement response;
+        HttpRequestSender sender;
+        int httpCode;
 
-    sender = new HttpRequestSender(session);
-    request = new SPRRequestElement(session);
-    request.build();
-    request.validate();
-    session.getConfiguration().getTraceManager().trace(request);
-    httpCode = sender.send(new ByteArrayContentFactory(request.toByteArray()));
-    Utils.checkHttpCode(httpCode);
-    response = new SPRResponseElement(sender.getResponseBody());
-    response.build();
-    session.getConfiguration().getTraceManager().trace(response);
-    response.report();
-  }
+        sender = new HttpRequestSender(session);
+        request = new HIARequestElement(session, orderId);
+        request.build();
+        request.validate();
+        session.getConfiguration().getTraceManager().trace(request);
+        httpCode = sender.send(new ByteArrayContentFactory(request.toByteArray()));
+        Utils.checkHttpCode(httpCode);
+        response = new KeyManagementResponseElement(sender.getResponseBody(), "HIAResponse");
+        response.build();
+        session.getConfiguration().getTraceManager().trace(response);
+        response.report();
+    }
 
-  // --------------------------------------------------------------------
-  // DATA MEMBERS
-  // --------------------------------------------------------------------
+    public void sendHPB() throws IOException, GeneralSecurityException, EbicsException, XmlException {
+        HttpRequestSender sender = new HttpRequestSender(session);
+        NoPubKeyDigestsRequestDocumentForHPB request = NoPubKeyDigestsRequestDocumentForHPB.create(session);
+        session.getConfiguration().getTraceManager().trace(request);
+        byte[] content = request.xmlObject.newInputStream().readAllBytes();
+        System.out.println("=====");
+        System.out.println("SENDUNG");
+        System.out.println("=====");
+        System.out.println(new String(content));
+        int httpCode = sender.send(new ByteArrayContentFactory(content));
+        Utils.checkHttpCode(httpCode);
+        KeyManagementResponseElement response = new KeyManagementResponseElement(sender.getResponseBody(), "HBPResponse");
+        response.build();
+        session.getConfiguration().getTraceManager().trace(response);
+        response.report();
+        ContentFactory factory = new ByteArrayContentFactory(Utils.unzip(session.getUser().decrypt(response.getOrderData(), response.getTransactionKey())));
+        HPBResponseOrderDataElement orderData = new HPBResponseOrderDataElement(factory);
+        orderData.build();
+        session.getConfiguration().getTraceManager().trace(orderData);
+        KeyStoreManager keystoreManager = new KeyStoreManager();
+        String path = session.getConfiguration().getKeystoreDirectory(session.getUser());
+        keystoreManager.load("", session.getUser().getPasswordCallback().getPassword());
 
-  private EbicsSession 				session;
+        RSAPublicKey e002PubKey;
+        RSAPublicKey x002PubKey;
+        if (session.getUser().getPartner().getBank().useCertificate()) {
+            e002PubKey = keystoreManager.getPublicKey(new ByteArrayInputStream(orderData.getBankE002Certificate()));
+            x002PubKey = keystoreManager.getPublicKey(new ByteArrayInputStream(orderData.getBankX002Certificate()));
+            session.getUser().getPartner().getBank().setBankKeys(e002PubKey, x002PubKey);
+            session.getUser().getPartner().getBank().setDigests(KeyUtil.getKeyDigest(e002PubKey), KeyUtil.getKeyDigest(x002PubKey));
+            keystoreManager.setCertificateEntry(session.getBankID() + "-E002", new ByteArrayInputStream(orderData.getBankE002Certificate()));
+            keystoreManager.setCertificateEntry(session.getBankID() + "-X002", new ByteArrayInputStream(orderData.getBankX002Certificate()));
+            keystoreManager.save(new FileOutputStream(path + File.separator + session.getBankID() + ".p12"));
+        } else {
+            e002PubKey = keystoreManager.getPublicKey(new BigInteger(orderData.getBankE002PublicKeyExponent()), new BigInteger(orderData.getBankE002PublicKeyModulus()));
+            x002PubKey = keystoreManager.getPublicKey(new BigInteger(orderData.getBankX002PublicKeyExponent()), new BigInteger(orderData.getBankX002PublicKeyModulus()));
+            session.getUser().getPartner().getBank().setBankKeys(e002PubKey, x002PubKey);
+            session.getUser().getPartner().getBank().setDigests(KeyUtil.getKeyDigest(e002PubKey), KeyUtil.getKeyDigest(x002PubKey));
+            keystoreManager.save(new FileOutputStream(path + File.separator + session.getBankID() + ".p12"));
+        }
+    }
+
+    public void sendSPR() throws IOException, EbicsException {
+        HttpRequestSender sender;
+        SPRRequestElement request;
+        SPRResponseElement response;
+        int httpCode;
+
+        sender = new HttpRequestSender(session);
+        request = new SPRRequestElement(session);
+        request.build();
+        request.validate();
+        session.getConfiguration().getTraceManager().trace(request);
+        httpCode = sender.send(new ByteArrayContentFactory(request.toByteArray()));
+        Utils.checkHttpCode(httpCode);
+        response = new SPRResponseElement(sender.getResponseBody());
+        response.build();
+        session.getConfiguration().getTraceManager().trace(response);
+        response.report();
+    }
+
 }

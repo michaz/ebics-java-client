@@ -119,7 +119,7 @@ public abstract class DefaultEbicsRootElement implements EbicsRootElement {
   // DATA MEMBERS
   // --------------------------------------------------------------------
 
-  protected XmlObject xmlObject;
+  public XmlObject xmlObject;
   protected EbicsSession 		session;
   private static final long 		serialVersionUID = -3928957097145095177L;
 }
