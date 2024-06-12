@@ -24,6 +24,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.Calendar;
+import java.util.HashMap;
 
 import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlObject;
@@ -59,7 +60,13 @@ public class NoPubKeyDigestsRequestDocumentForHPB extends DefaultEbicsRootElemen
     NoPubKeyDigestsRequestDocumentForHPB noPubKeyDigestsRequestDocumentForHPB = new NoPubKeyDigestsRequestDocumentForHPB(session);
     noPubKeyDigestsRequestDocumentForHPB.build();
     System.out.println("===dump before signing");
-    noPubKeyDigestsRequestDocumentForHPB.xmlObject.save(System.out);
+    var suggestedPrefixes = new HashMap<String, String>();
+    suggestedPrefixes.put("urn:org:ebics:H004", "ebics");
+    suggestedPrefixes.put("http://www.w3.org/2000/09/xmldsig#", "ds");
+    XmlOptions opts = new XmlOptions().setSaveSuggestedPrefixes(suggestedPrefixes);
+    opts.setSaveSuggestedPrefixes(suggestedPrefixes);
+    noPubKeyDigestsRequestDocumentForHPB.xmlObject.save(System.out, opts);
+
     Signature authSignature = new Signature(session.getUser(), noPubKeyDigestsRequestDocumentForHPB.getDigest());
     authSignature.build();
     noPubKeyDigestsRequestDocumentForHPB.setAuthSignature(authSignature);
@@ -126,7 +133,6 @@ public class NoPubKeyDigestsRequestDocumentForHPB extends DefaultEbicsRootElemen
     SignatureType signatureType = newEbicsNoPubKeyDigestsRequest.addNewAuthSignature();
     signatureType.addNewSignedInfo();
     signatureType.addNewSignatureValue();
-    newEbicsNoPubKeyDigestsRequestDocument.save(System.out, new XmlOptions().setSavePrettyPrint());
     xmlObject = newEbicsNoPubKeyDigestsRequestDocument;
   }
 
