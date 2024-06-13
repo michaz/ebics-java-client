@@ -502,9 +502,6 @@ public class EbicsXmlFactory {
   public static OrderDetailsType createOrderDetailsType(String orderAttribute, String orderId, String orderType) {
     OrderDetailsType newOrderDetailsType = OrderDetailsType.Factory.newInstance();
     newOrderDetailsType.setOrderAttribute(orderAttribute);
-    if (orderId != null) {
-      newOrderDetailsType.setOrderID(orderId);
-    }
     newOrderDetailsType.setOrderType(orderType);
 
     return newOrderDetailsType;
@@ -706,7 +703,6 @@ public class EbicsXmlFactory {
     newNoPubKeyDigestsRequestStaticHeaderType.setTimestamp(timestamp);
     newNoPubKeyDigestsRequestStaticHeaderType.setPartnerID(partnerId);
     newNoPubKeyDigestsRequestStaticHeaderType.setUserID(userId);
-    newNoPubKeyDigestsRequestStaticHeaderType.setProduct(product);
     newNoPubKeyDigestsRequestStaticHeaderType.setOrderDetails(orderDetails);
     newNoPubKeyDigestsRequestStaticHeaderType.setSecurityMedium(securityMedium);
 

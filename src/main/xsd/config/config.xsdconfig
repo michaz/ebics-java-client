@@ -9,7 +9,7 @@
     <xb:package>org.kopi.ebics.schema.h000</xb:package>
   </xb:namespace>
   
-  <xb:namespace uri="http://www.ebics.org/H003">
+  <xb:namespace uri="urn:org:ebics:H004">
     <xb:package>org.kopi.ebics.schema.h003</xb:package>
   </xb:namespace>
   

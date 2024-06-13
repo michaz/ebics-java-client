@@ -121,7 +121,7 @@ public class NoPubKeyDigestsRequestElement extends DefaultEbicsRootElement {
   @Override
   public byte[] toByteArray() {
     setSaveSuggestedPrefixes("http://www.w3.org/2000/09/xmldsig#", "ds");
-    setSaveSuggestedPrefixes("http://www.ebics.org/H003", "");
+    setSaveSuggestedPrefixes("urn:org:ebics:H004", "");
 
     return super.toByteArray();
   }
