@@ -19,27 +19,22 @@
 
 package org.kopi.ebics.client;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.io.*;
 import java.net.URL;
 import java.security.GeneralSecurityException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
+import java.security.interfaces.RSAPublicKey;
+import java.util.*;
 
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
+import freemarker.template.TemplateExceptionHandler;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -53,6 +48,7 @@ import org.kopi.ebics.interfaces.InitLetter;
 import org.kopi.ebics.interfaces.LetterManager;
 import org.kopi.ebics.interfaces.PasswordCallback;
 import org.kopi.ebics.io.IOUtils;
+import org.kopi.ebics.letter.AbstractInitLetter;
 import org.kopi.ebics.messages.Messages;
 import org.kopi.ebics.schema.h003.OrderAttributeType;
 import org.kopi.ebics.session.DefaultConfiguration;
@@ -60,6 +56,8 @@ import org.kopi.ebics.session.EbicsSession;
 import org.kopi.ebics.session.OrderType;
 import org.kopi.ebics.session.Product;
 import org.kopi.ebics.utils.Constants;
+
+import static org.kopi.ebics.letter.AbstractInitLetter.removeFirstByte;
 
 /**
  * The ebics client application. Performs necessary tasks to contact the ebics
@@ -568,22 +566,11 @@ public class EbicsClient {
     }
 
     private PasswordCallback createPasswordCallback() {
-        final String password = properties.get("password");
-        return new PasswordCallback() {
-
-            @Override
-            public char[] getPassword() {
-                return password.toCharArray();
-            }
-        };
+        return () -> properties.get("password").toCharArray();
     }
 
     private void setDefaultProduct(Product product) {
         this.defaultProduct = product;
-    }
-
-    public User getDefaultUser() {
-        return defaultUser;
     }
 
     private static void addOption(Options options, EbicsOrderType type, String description) {
@@ -638,6 +625,7 @@ public class EbicsClient {
 
         if (cmd.hasOption("letters")) {
             client.createLetters(client.defaultUser, false);
+            client.createLetters2(client.defaultUser);
         }
 
         if (hasOption(cmd, OrderType.INI)) {
@@ -682,6 +670,49 @@ public class EbicsClient {
             }
         }
         client.quit();
+    }
+
+    private void createLetters2(User user) throws IOException, TemplateException, EbicsException {
+        freemarker.template.Configuration cfg = new freemarker.template.Configuration(freemarker.template.Configuration.VERSION_2_3_33);
+        cfg.setDirectoryForTemplateLoading(new File("."));
+        cfg.setDefaultEncoding("UTF-8");
+        cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+
+        Template letterHeadTemplate = cfg.getTemplate("letterhead.ftl");
+        Template letterTemplate = cfg.getTemplate("key.ftl");
+        Template letterFooter = cfg.getTemplate("letterfoot.ftl");
+        PrintWriter out = new PrintWriter(System.out);
+
+        letterHeadTemplate.process(letterHead(user, "Initialisierungsbrief INI"), out);
+        letterTemplate.process(letter(user, user.getA005PublicKey(), "Öffentlicher Schlüssel für die elektronische Unterschrift A005"), out);
+        letterFooter.process(letterFoot(user), out);
+        letterHeadTemplate.process(letterHead(user, "Initialisierungsbrief HIA"), out);
+        letterTemplate.process(letter(user, user.getX002PublicKey(), "Öffentlicher Authentifikationsschlüssel X002"), out);
+        letterTemplate.process(letter(user, user.getE002PublicKey(), "Öffentlicher Verschlüsselungsschlüssel E002"), out);
+        letterFooter.process(letterFoot(user), out);
+    }
+
+    private static HashMap<String, Object> letterFoot(User user) {
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("user", user);
+        return map;
+    }
+
+    private static HashMap<String, Object> letterHead(User user, String title) {
+        var letterHead = new HashMap<String, Object>();
+        letterHead.put("title", title);
+        letterHead.put("user", user);
+        return letterHead;
+    }
+
+    private static HashMap<String, Object> letter(User user, RSAPublicKey publicKey, String title) throws EbicsException {
+        var dataModel = new HashMap<String, Object>();
+        dataModel.put("user", user);
+        dataModel.put("keyname", title);
+        dataModel.put("modulus", AbstractInitLetter.format(Hex.encodeHexString(removeFirstByte(publicKey.getModulus().toByteArray())).toUpperCase(), 64));
+        dataModel.put("exponent", AbstractInitLetter.format(Hex.encodeHexString(publicKey.getPublicExponent().toByteArray()).toUpperCase(), 64));
+        dataModel.put("hash", new String(AbstractInitLetter.getHash(publicKey)));
+        return dataModel;
     }
 
     private static File getOutputFile(String outputFileName) {

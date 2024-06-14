@@ -64,10 +64,8 @@ public class NoPubKeyDigestsRequestElement extends DefaultEbicsRootElement {
     addNamespaceDecl("ds", "http://www.w3.org/2000/09/xmldsig#");
 
     try {
-      return MessageDigest.getInstance("SHA-256", "BC").digest(Utils.canonize(toByteArray()));
-    } catch (NoSuchAlgorithmException e) {
-      throw new EbicsException(e.getMessage());
-    } catch (NoSuchProviderException e) {
+        return MessageDigest.getInstance("SHA-256", "BC").digest(Utils.canonize(toByteArray()));
+    } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
       throw new EbicsException(e.getMessage());
     }
   }

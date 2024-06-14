@@ -31,6 +31,8 @@ import org.kopi.ebics.session.EbicsSession;
  */
 public class HPBRequestElement extends DefaultEbicsRootElement {
 
+  private SignedInfo signedInfo;
+
   /**
    * Constructs a new HPB Request element.
    * @param session the current ebics session.
@@ -46,16 +48,12 @@ public class HPBRequestElement extends DefaultEbicsRootElement {
 
   @Override
   public void build() throws EbicsException {
-    SignedInfo			signedInfo;
-    byte[]			signature;
-
     noPubKeyDigestsRequest = new NoPubKeyDigestsRequestElement(session);
     noPubKeyDigestsRequest.build();
     signedInfo = new SignedInfo(session.getUser(), noPubKeyDigestsRequest.getDigest());
     signedInfo.build();
     noPubKeyDigestsRequest.setAuthSignature(signedInfo.getSignatureType());
-    signature = signedInfo.sign(noPubKeyDigestsRequest.toByteArray());
-    noPubKeyDigestsRequest.setSignatureValue(signature);
+    noPubKeyDigestsRequest.setSignatureValue(signedInfo.sign(noPubKeyDigestsRequest.toByteArray()));
   }
 
   @Override
@@ -66,6 +64,10 @@ public class HPBRequestElement extends DefaultEbicsRootElement {
   @Override
   public void validate() throws EbicsException {
     noPubKeyDigestsRequest.validate();
+  }
+
+  public void verify(byte[] toVerify) throws EbicsException {
+    signedInfo.verify(toVerify);
   }
 
   // --------------------------------------------------------------------

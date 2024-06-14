@@ -109,10 +109,10 @@ public abstract class AbstractInitLetter implements InitLetter {
   protected byte[] getHash(byte[] certificate) throws GeneralSecurityException {
     String hash256 = new String(
         Hex.encodeHex(MessageDigest.getInstance("SHA-256").digest(certificate), false));
-    return format(hash256).getBytes();
+    return format(hash256, 32).getBytes();
   }
 
-    protected byte[] getHash(RSAPublicKey publicKey) throws EbicsException {
+    public static byte[] getHash(RSAPublicKey publicKey) throws EbicsException {
         String			modulus;
         String			exponent;
         String			hash;
@@ -132,10 +132,10 @@ public abstract class AbstractInitLetter implements InitLetter {
           throw new EbicsException(e.getMessage());
         }
 
-        return format(new String(Hex.encodeHex(digest, false))).getBytes();
+        return format(new String(Hex.encodeHex(digest, false)), 32).getBytes();
     }
 
-    private static byte[] removeFirstByte(byte[] byteArray) {
+    public static byte[] removeFirstByte(byte[] byteArray) {
         byte[] b = new byte[byteArray.length - 1];
         System.arraycopy(byteArray, 1, b, 0, b.length);
         return b;
@@ -146,14 +146,17 @@ public abstract class AbstractInitLetter implements InitLetter {
    * @param hash256 the hash input
    * @return the formatted hash
    */
-  private String format(String hash256) {
-    StringBuffer buffer = new StringBuffer();
+  public static String format(String hash256, int mod) {
+    StringBuilder buffer = new StringBuilder();
     for (int i = 0; i < hash256.length(); i += 2) {
       buffer.append(hash256.charAt(i));
       buffer.append(hash256.charAt(i + 1));
-      buffer.append(' ');
+      if (i % mod == (mod-2))
+        buffer.append(LINE_SEPARATOR);
+      else
+          buffer.append(' ');
     }
-    return buffer.substring(0, 48) + LINE_SEPARATOR + buffer.substring(48) + LINE_SEPARATOR;
+    return buffer.toString();
   }
 
   // --------------------------------------------------------------------

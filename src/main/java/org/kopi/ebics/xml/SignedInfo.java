@@ -20,6 +20,9 @@
 package org.kopi.ebics.xml;
 
 import java.io.ByteArrayInputStream;
+import java.security.MessageDigest;
+import java.security.Signature;
+import java.util.Base64;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -28,6 +31,7 @@ import org.apache.xml.security.c14n.Canonicalizer;
 import org.apache.xml.security.transforms.TransformationException;
 import org.apache.xml.security.utils.IgnoreAllErrorHandler;
 import org.apache.xpath.XPathAPI;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.kopi.ebics.exception.EbicsException;
 import org.kopi.ebics.interfaces.EbicsUser;
 import org.kopi.ebics.schema.xmldsig.CanonicalizationMethodType;
@@ -38,6 +42,7 @@ import org.kopi.ebics.schema.xmldsig.SignatureType;
 import org.kopi.ebics.schema.xmldsig.SignedInfoType;
 import org.kopi.ebics.schema.xmldsig.TransformType;
 import org.kopi.ebics.schema.xmldsig.TransformsType;
+import org.kopi.ebics.utils.Utils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -143,7 +148,47 @@ public class SignedInfo extends DefaultEbicsRootElement {
       document = builder.parse(new ByteArrayInputStream(toSign));
       node = XPathAPI.selectSingleNode(document, "//ds:SignedInfo");
       canonicalizer = Canonicalizer.getInstance(Canonicalizer.ALGO_ID_C14N_OMIT_COMMENTS);
-      return user.authenticate(canonicalizer.canonicalizeSubtree(node));
+      System.out.println("sign");
+      byte[] data = canonicalizer.canonicalizeSubtree(node);
+      System.out.println(new String(data));
+      return user.authenticate(data);
+    } catch(Exception e) {
+      throw new EbicsException(e.getMessage());
+    }
+  }
+
+  public void verify(byte[] toVerify) throws EbicsException {
+    try {
+      DocumentBuilderFactory 		factory;
+      DocumentBuilder			builder;
+      Document				document;
+      Node 				node;
+      Canonicalizer 			canonicalizer;
+
+      factory = DocumentBuilderFactory.newInstance();
+      factory.setNamespaceAware(true);
+      factory.setValidating(true);
+      builder = factory.newDocumentBuilder();
+      builder.setErrorHandler(new IgnoreAllErrorHandler());
+      document = builder.parse(new ByteArrayInputStream(toVerify));
+      String actualDigest = XPathAPI.selectSingleNode(document, "//ds:DigestValue").getTextContent();
+      String expectedDigest = Base64.getEncoder().encodeToString(MessageDigest.getInstance("SHA-256", "BC").digest(Utils.canonize(toVerify)));
+      if (!actualDigest.equals(expectedDigest)) {
+        throw new EbicsException("Digest does not match");
+      }
+      node = XPathAPI.selectSingleNode(document, "//ds:SignedInfo");
+      String sig = XPathAPI.selectSingleNode(document, "//ds:SignatureValue").getTextContent();
+      canonicalizer = Canonicalizer.getInstance(Canonicalizer.ALGO_ID_C14N_OMIT_COMMENTS);
+      Signature signature = Signature.getInstance("SHA256WithRSA", BouncyCastleProvider.PROVIDER_NAME);
+      signature.initVerify(user.getX002PublicKey());
+      System.out.println("verify");
+      byte[] data = canonicalizer.canonicalizeSubtree(node);
+      System.out.println(new String(data));
+      signature.update(data);
+      boolean verify = signature.verify(Base64.getDecoder().decode(sig));
+      if (!verify) {
+        throw new RuntimeException();
+      }
     } catch(Exception e) {
       throw new EbicsException(e.getMessage());
     }

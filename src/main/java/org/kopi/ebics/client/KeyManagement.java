@@ -27,6 +27,9 @@ import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.interfaces.RSAPublicKey;
 
+import org.apache.xml.security.c14n.CanonicalizationException;
+import org.apache.xml.security.c14n.Canonicalizer;
+import org.apache.xml.security.c14n.InvalidCanonicalizerException;
 import org.kopi.ebics.certificate.KeyStoreManager;
 import org.kopi.ebics.certificate.KeyUtil;
 import org.kopi.ebics.exception.EbicsException;
@@ -41,6 +44,9 @@ import org.kopi.ebics.xml.INIRequestElement;
 import org.kopi.ebics.xml.KeyManagementResponseElement;
 import org.kopi.ebics.xml.SPRRequestElement;
 import org.kopi.ebics.xml.SPRResponseElement;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 
 /**
@@ -122,7 +128,7 @@ public class KeyManagement {
    * @throws GeneralSecurityException data decryption error
    * @throws EbicsException server generated error message
    */
-  public void sendHPB() throws IOException, GeneralSecurityException, EbicsException {
+  public void sendHPB() throws IOException, GeneralSecurityException, EbicsException, InvalidCanonicalizerException, CanonicalizationException, ParserConfigurationException, SAXException {
     HPBRequestElement			request;
     KeyManagementResponseElement	response;
     HttpRequestSender			sender;
@@ -139,7 +145,13 @@ public class KeyManagement {
     request.build();
     request.validate();
     session.getConfiguration().getTraceManager().trace(request);
-    httpCode = sender.send(new ByteArrayContentFactory(request.prettyPrint()));
+    byte[] content = request.prettyPrint();
+    String s = new String(Utils.canonize(content));
+    System.out.println(s);
+    request.verify(content);
+    Canonicalizer canonicalizer = Canonicalizer.getInstance(Canonicalizer.ALGO_ID_C14N_OMIT_COMMENTS);
+    request.verify(canonicalizer.canonicalize(content));
+    httpCode = sender.send(new ByteArrayContentFactory(content));
     Utils.checkHttpCode(httpCode);
     response = new KeyManagementResponseElement(sender.getResponseBody(), "HBPResponse");
     response.build();
