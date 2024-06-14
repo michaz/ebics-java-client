@@ -1,7 +1,4 @@
-Ich bestätige hiermit den obigen öffentlichen Schlüssel für meine elektronische Unterschrift.
+${attestation}
 
 
-${.now?string["dd.MM.yyyy"]}
-
-
-${user.name}
+Datum:                                      Unterschrift:

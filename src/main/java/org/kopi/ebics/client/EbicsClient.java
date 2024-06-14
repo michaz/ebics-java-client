@@ -685,16 +685,17 @@ public class EbicsClient {
 
         letterHeadTemplate.process(letterHead(user, "Initialisierungsbrief INI"), out);
         letterTemplate.process(letter(user, user.getA005PublicKey(), "Öffentlicher Schlüssel für die elektronische Unterschrift A005"), out);
-        letterFooter.process(letterFoot(user), out);
+        letterFooter.process(letterFoot(user,"Ich bestätige hiermit den obigen öffentlichen Schlüssel für meine elektronische Unterschrift."), out);
         letterHeadTemplate.process(letterHead(user, "Initialisierungsbrief HIA"), out);
         letterTemplate.process(letter(user, user.getX002PublicKey(), "Öffentlicher Authentifikationsschlüssel X002"), out);
         letterTemplate.process(letter(user, user.getE002PublicKey(), "Öffentlicher Verschlüsselungsschlüssel E002"), out);
-        letterFooter.process(letterFoot(user), out);
+        letterFooter.process(letterFoot(user, "Ich bestätige hiermit den obigen öffentlichen Schlüssel."), out);
     }
 
-    private static HashMap<String, Object> letterFoot(User user) {
+    private static HashMap<String, Object> letterFoot(User user, String attestation) {
         HashMap<String, Object> map = new HashMap<>();
         map.put("user", user);
+        map.put("attestation", attestation);
         return map;
     }
 
