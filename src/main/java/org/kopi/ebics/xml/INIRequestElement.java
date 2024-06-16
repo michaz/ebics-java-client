@@ -36,11 +36,9 @@ public class INIRequestElement extends DefaultEbicsRootElement {
   /**
    * Constructs a new INI request element.
    * @param session the ebics session.
-   * @param orderId the order id, if null a random one is generated.
    */
-  public INIRequestElement(EbicsSession session, String orderId) {
+  public INIRequestElement(EbicsSession session) {
     super(session);
-    this.orderId = orderId;
   }
 
   @Override
@@ -50,27 +48,23 @@ public class INIRequestElement extends DefaultEbicsRootElement {
 
   @Override
   public void build() throws EbicsException {
-    SignaturePubKeyOrderDataElement		signaturePubKey;
-
-    signaturePubKey = new SignaturePubKeyOrderDataElement(session);
-    signaturePubKey.build();
-    unsecuredRequest = new UnsecuredRequestElement(session,
-	                                           OrderType.INI,
-	                                           orderId == null ? session.getUser().getPartner().nextOrderId() : orderId,
-	                                           Utils.zip(signaturePubKey.prettyPrint()));
-    unsecuredRequest.build();
+    SignaturePubKeyOrderData signaturePubKeyOrderData;
+    signaturePubKeyOrderData = new SignaturePubKeyOrderData(session);
+    signaturePubKeyOrderData.build();
+    System.out.println(new String(signaturePubKeyOrderData.prettyPrint()));
+    ebicsUnsecuredRequest = new EbicsUnsecuredRequest(session, OrderType.INI, Utils.zip(signaturePubKeyOrderData.prettyPrint()));
+    ebicsUnsecuredRequest.build();
   }
 
   @Override
   public byte[] toByteArray() {
-    setSaveSuggestedPrefixes("http://www.ebics.org/H003", "");
-
-    return unsecuredRequest.toByteArray();
+    setPrefixes("urn:org:ebics:H004", "");
+    return ebicsUnsecuredRequest.toByteArray();
   }
 
   @Override
   public void validate() throws EbicsException {
-    unsecuredRequest.validate();
+    ebicsUnsecuredRequest.validate();
   }
 
   // --------------------------------------------------------------------
@@ -78,6 +72,6 @@ public class INIRequestElement extends DefaultEbicsRootElement {
   // --------------------------------------------------------------------
 
   private String			orderId;
-  private UnsecuredRequestElement	unsecuredRequest;
+  private EbicsUnsecuredRequest ebicsUnsecuredRequest;
   private static final long 		serialVersionUID = -1966559247739923555L;
 }

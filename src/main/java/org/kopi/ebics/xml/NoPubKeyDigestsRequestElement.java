@@ -97,7 +97,7 @@ public class NoPubKeyDigestsRequestElement extends DefaultEbicsRootElement {
     OrderDetailsType 				orderDetails;
 
     product = EbicsXmlFactory.creatProductElementType(session.getProduct().getLanguage(), session.getProduct().getName());
-    orderDetails = EbicsXmlFactory.createOrderDetailsType("DZHNN", null, OrderType.HPB.getCode());
+    orderDetails = EbicsXmlFactory.createOrderDetailsType("DZHNN", OrderType.HPB.getCode());
     xstatic = EbicsXmlFactory.createNoPubKeyDigestsRequestStaticHeaderType(session.getBankID(),
 	                                                                   Utils.generateNonce(),
 	                                                                   Calendar.getInstance(),
@@ -118,8 +118,8 @@ public class NoPubKeyDigestsRequestElement extends DefaultEbicsRootElement {
 
   @Override
   public byte[] toByteArray() {
-    setSaveSuggestedPrefixes("http://www.w3.org/2000/09/xmldsig#", "ds");
-    setSaveSuggestedPrefixes("urn:org:ebics:H004", "");
+    setPrefixes("http://www.w3.org/2000/09/xmldsig#", "ds");
+    setPrefixes("urn:org:ebics:H004", "");
 
     return super.toByteArray();
   }

@@ -71,7 +71,7 @@ public abstract class DefaultEbicsRootElement implements EbicsRootElement {
    * @param uri the namespace URI
    * @param prefix the namespace URI prefix
    */
-  protected static void setSaveSuggestedPrefixes(String uri, String prefix) {
+  protected static void setPrefixes(String uri, String prefix) {
     suggestedPrefixes.put(uri, prefix);
   }
 

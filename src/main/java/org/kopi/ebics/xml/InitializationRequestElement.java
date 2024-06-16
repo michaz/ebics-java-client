@@ -84,7 +84,7 @@ public abstract class InitializationRequestElement extends DefaultEbicsRootEleme
 
   @Override
   public byte[] toByteArray() {
-    setSaveSuggestedPrefixes("http://www.ebics.org/H003", "");
+    setPrefixes("http://www.ebics.org/H003", "");
 
     return super.toByteArray();
   }

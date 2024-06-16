@@ -37,7 +37,7 @@ import org.kopi.ebics.interfaces.ContentFactory;
 import org.kopi.ebics.io.ByteArrayContentFactory;
 import org.kopi.ebics.session.EbicsSession;
 import org.kopi.ebics.utils.Utils;
-import org.kopi.ebics.xml.HIARequestElement;
+import org.kopi.ebics.xml.HIARequest;
 import org.kopi.ebics.xml.HPBRequestElement;
 import org.kopi.ebics.xml.HPBResponseOrderDataElement;
 import org.kopi.ebics.xml.INIRequestElement;
@@ -72,22 +72,24 @@ public class KeyManagement {
   /**
    * Sends the user's signature key (A005) to the bank.
    * After successful operation the user is in state "initialized".
-   * @param orderId the order ID. Let it null to generate a random one.
    * @throws EbicsException server generated error message
    * @throws IOException communication error
    */
-  public void sendINI(String orderId) throws EbicsException, IOException {
+  public void sendINI() throws EbicsException, IOException {
     INIRequestElement			request;
     KeyManagementResponseElement	response;
     HttpRequestSender			sender;
     int					httpCode;
 
     sender = new HttpRequestSender(session);
-    request = new INIRequestElement(session, orderId);
+    request = new INIRequestElement(session);
     request.build();
     request.validate();
     session.getConfiguration().getTraceManager().trace(request);
-    httpCode = sender.send(new ByteArrayContentFactory(request.prettyPrint()));
+    byte[] content = request.prettyPrint();
+    System.out.println(new String(content));
+    if (0==0) throw new RuntimeException();
+    httpCode = sender.send(new ByteArrayContentFactory(content));
     Utils.checkHttpCode(httpCode);
     response = new KeyManagementResponseElement(sender.getResponseBody(), "INIResponse");
     response.build();
@@ -102,17 +104,20 @@ public class KeyManagement {
    * @throws EbicsException server generated error message
    */
   public void sendHIA(String orderId) throws IOException, EbicsException {
-    HIARequestElement			request;
+    HIARequest request;
     KeyManagementResponseElement	response;
     HttpRequestSender			sender;
     int					httpCode;
 
     sender = new HttpRequestSender(session);
-    request = new HIARequestElement(session, orderId);
+    request = new HIARequest(session, orderId);
     request.build();
     request.validate();
     session.getConfiguration().getTraceManager().trace(request);
-    httpCode = sender.send(new ByteArrayContentFactory(request.prettyPrint()));
+    byte[] content = request.prettyPrint();
+    System.out.println(new String(content));
+    if (0==0) throw new RuntimeException();
+    httpCode = sender.send(new ByteArrayContentFactory(content));
     Utils.checkHttpCode(httpCode);
     response = new KeyManagementResponseElement(sender.getResponseBody(), "HIAResponse");
     response.build();

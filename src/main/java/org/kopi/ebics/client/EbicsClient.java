@@ -294,7 +294,7 @@ public class EbicsClient {
         configuration.getTraceManager().setTraceDirectory(
             configuration.getTransferTraceDirectory(user));
         try {
-            keyManager.sendINI(null);
+            keyManager.sendINI();
             user.setInitialized(true);
             logger.info(messages.getString("ini.send.success", userId));
         } catch (Exception e) {

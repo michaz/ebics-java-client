@@ -19,8 +19,15 @@
 
 package org.kopi.ebics.xml;
 
+import java.math.BigInteger;
+import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.interfaces.RSAPublicKey;
 import java.util.Calendar;
 
+import org.apache.commons.codec.binary.Hex;
+import org.kopi.ebics.certificate.KeyUtil;
+import org.kopi.ebics.certificate.X509Constants;
 import org.kopi.ebics.exception.EbicsException;
 import org.kopi.ebics.schema.s001.PubKeyValueType;
 import org.kopi.ebics.schema.s001.SignaturePubKeyInfoType;
@@ -28,6 +35,8 @@ import org.kopi.ebics.schema.s001.SignaturePubKeyOrderDataType;
 import org.kopi.ebics.schema.xmldsig.RSAKeyValueType;
 import org.kopi.ebics.schema.xmldsig.X509DataType;
 import org.kopi.ebics.session.EbicsSession;
+
+import static org.kopi.ebics.letter.AbstractInitLetter.removeFirstByte;
 
 
 /**
@@ -37,13 +46,13 @@ import org.kopi.ebics.session.EbicsSession;
  * @author hachani
  *
  */
-public class SignaturePubKeyOrderDataElement extends DefaultEbicsRootElement {
+public class SignaturePubKeyOrderData extends DefaultEbicsRootElement {
 
   /**
    * Creates a new Signature Public Key Order Data element.
    * @param session the current ebics session
    */
-  public SignaturePubKeyOrderDataElement(EbicsSession session) {
+  public SignaturePubKeyOrderData(EbicsSession session) {
     super(session);
   }
 
@@ -59,8 +68,17 @@ public class SignaturePubKeyOrderDataElement extends DefaultEbicsRootElement {
     if (session.getUser().getPartner().getBank().useCertificate())
         x509Data = EbicsXmlFactory.createX509DataType(session.getUser().getDN(),
 	                                          session.getUser().getA005Certificate());
-    rsaKeyValue = EbicsXmlFactory.createRSAKeyValueType(session.getUser().getA005PublicKey().getPublicExponent().toByteArray(),
-	                                                session.getUser().getA005PublicKey().getModulus().toByteArray());
+    BigInteger publicExponent = session.getUser().getA005PublicKey().getPublicExponent();
+    BigInteger modulus = session.getUser().getA005PublicKey().getModulus();
+    System.out.println(publicExponent);
+    System.out.println(Hex.encodeHexString(publicExponent.toByteArray()));
+    System.out.println(modulus);
+    System.out.println(Hex.encodeHexString(modulus.toByteArray()));
+    System.out.println(modulus.toByteArray().length);
+    System.out.println(Hex.encodeHexString(removeFirstByte(modulus.toByteArray())));
+
+    rsaKeyValue = EbicsXmlFactory.createRSAKeyValueType(publicExponent.toByteArray(), removeFirstByte(modulus.toByteArray()));
+    System.out.println(rsaKeyValue.xgetModulus().toString());
     pubKeyValue = EbicsXmlFactory.createPubKeyValueType(rsaKeyValue, Calendar.getInstance());
     signaturePubKeyInfo = EbicsXmlFactory.createSignaturePubKeyInfoType(x509Data,
 	                                                                pubKeyValue,
@@ -79,7 +97,7 @@ public class SignaturePubKeyOrderDataElement extends DefaultEbicsRootElement {
   @Override
   public byte[] toByteArray() {
     addNamespaceDecl("ds", "http://www.w3.org/2000/09/xmldsig#");
-    setSaveSuggestedPrefixes("http://www.ebics.org/S001", "");
+    setPrefixes("http://www.ebics.org/S001", "");
 
     return super.toByteArray();
   }

@@ -72,13 +72,7 @@ import org.kopi.ebics.schema.h003.StaticHeaderType.BankPubKeyDigests.Encryption;
 import org.kopi.ebics.schema.h003.StaticHeaderType.Product;
 import org.kopi.ebics.schema.h003.TransactionPhaseType.Enum;
 import org.kopi.ebics.schema.h003.UnsecuredRequestStaticHeaderType;
-import org.kopi.ebics.schema.s001.OrderSignatureDataType;
-import org.kopi.ebics.schema.s001.PubKeyValueType;
-import org.kopi.ebics.schema.s001.SignaturePubKeyInfoType;
-import org.kopi.ebics.schema.s001.SignaturePubKeyOrderDataDocument;
-import org.kopi.ebics.schema.s001.SignaturePubKeyOrderDataType;
-import org.kopi.ebics.schema.s001.UserSignatureDataDocument;
-import org.kopi.ebics.schema.s001.UserSignatureDataSigBookType;
+import org.kopi.ebics.schema.s001.*;
 import org.kopi.ebics.schema.xmldsig.CanonicalizationMethodType;
 import org.kopi.ebics.schema.xmldsig.DigestMethodType;
 import org.kopi.ebics.schema.xmldsig.RSAKeyValueType;
@@ -365,8 +359,9 @@ public class EbicsXmlFactory {
   public static PubKeyValueType createPubKeyValueType(RSAKeyValueType rsaKeyValue, Calendar timeStamp) {
     PubKeyValueType newPubKeyValueType = PubKeyValueType.Factory.newInstance();
     newPubKeyValueType.setRSAKeyValue(rsaKeyValue);
-    newPubKeyValueType.setTimeStamp(timeStamp);
-
+    TimestampType timestamp = TimestampType.Factory.newInstance();
+    timestamp.setStringValue(timeStamp.toInstant().toString());
+    newPubKeyValueType.xsetTimeStamp(timestamp);
     return newPubKeyValueType;
   }
 
@@ -494,16 +489,14 @@ public class EbicsXmlFactory {
   /**
    * Creates a new <code>OrderDetailsType</code> XML object
    * @param orderAttribute the order attribute
-   * @param orderId the order ID
    * @param orderType the order type
    * @return the <code>OrderDetailsType</code> XML object
    */
   @SuppressWarnings("deprecation")
-  public static OrderDetailsType createOrderDetailsType(String orderAttribute, String orderId, String orderType) {
+  public static OrderDetailsType createOrderDetailsType(String orderAttribute, String orderType) {
     OrderDetailsType newOrderDetailsType = OrderDetailsType.Factory.newInstance();
     newOrderDetailsType.setOrderAttribute(orderAttribute);
     newOrderDetailsType.setOrderType(orderType);
-
     return newOrderDetailsType;
   }
 
@@ -617,20 +610,6 @@ public class EbicsXmlFactory {
         newEncryptionPubKeyInfoType.setX509Data(x509Data);
 
     return newEncryptionPubKeyInfoType;
-  }
-
-  /**
-   * Creates a new <code>org.kopi.ebics.schema.h003.PubKeyValueType</code> XML object
-   * @param rsaKeyValue the <code>RSAKeyValueType</code> element
-   * @param timeStamp the current time stamp
-   * @return the <code>org.kopi.ebics.schema.h003.PubKeyValueType</code> XML object
-   */
-  public static org.kopi.ebics.schema.h003.PubKeyValueType createH003PubKeyValueType(RSAKeyValueType rsaKeyValue, Calendar timeStamp) {
-    org.kopi.ebics.schema.h003.PubKeyValueType newPubKeyValueType = org.kopi.ebics.schema.h003.PubKeyValueType.Factory.newInstance();
-    newPubKeyValueType.setRSAKeyValue(rsaKeyValue);
-    newPubKeyValueType.setTimeStamp(timeStamp);
-
-    return newPubKeyValueType;
   }
 
   //-----------------------------------------------------------------------------------------------------------------------------------------------
