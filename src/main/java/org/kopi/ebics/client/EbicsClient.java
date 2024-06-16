@@ -710,7 +710,7 @@ public class EbicsClient {
         dataModel.put("keyname", title);
         dataModel.put("modulus", AbstractInitLetter.format(Hex.encodeHexString(BigIntegers.asUnsignedByteArray(publicKey.getModulus())).toUpperCase(), 64));
         dataModel.put("exponent", AbstractInitLetter.format(Hex.encodeHexString(BigIntegers.asUnsignedByteArray(publicKey.getPublicExponent())).toUpperCase(), 64));
-        dataModel.put("hash", AbstractInitLetter.format(KeyUtil.getKeyDigest(publicKey), 32));
+        dataModel.put("hash", AbstractInitLetter.format(Hex.encodeHexString(KeyUtil.getKeyDigest(publicKey), false), 32));
         return dataModel;
     }
 

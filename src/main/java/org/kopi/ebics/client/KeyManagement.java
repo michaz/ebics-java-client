@@ -24,12 +24,19 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.interfaces.RSAPublicKey;
 
+import org.apache.commons.codec.binary.Hex;
 import org.apache.xml.security.c14n.CanonicalizationException;
 import org.apache.xml.security.c14n.Canonicalizer;
 import org.apache.xml.security.c14n.InvalidCanonicalizerException;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.util.encoders.HexEncoder;
 import org.kopi.ebics.certificate.KeyStoreManager;
 import org.kopi.ebics.certificate.KeyUtil;
 import org.kopi.ebics.exception.EbicsException;
@@ -220,4 +227,26 @@ public class KeyManagement {
   // --------------------------------------------------------------------
 
   private EbicsSession 				session;
+
+  public static void main(String[] args) throws NoSuchAlgorithmException, NoSuchProviderException {
+    String m = "B2 90 65 AC 01 05 D7 8A 6D F0 5D 21 8A D5 A7 A6 6E F7 19 7D C7 65 83 16 D1 F3 28 39 D1 AE 89 C7\n" +
+            "3E 18 64 82 BD 30 6D BB 02 8C EB BC FC 9B 60 4E D8 75 EE CE B6 CB AF 63 DB 34 E6 C8 F6 5F 93 1A\n" +
+            "80 44 40 62 40 5B BF 6F 50 32 1B 05 43 AC 9D 2C 15 44 90 47 68 99 85 3D 28 78 57 8A 87 07 E4 AE\n" +
+            "71 35 D6 14 8A 69 5F 4F 66 F6 6C F8 3D 7A 0E 00 26 D1 1C E9 18 E2 7A 78 DE 12 0E 49 C2 61 DF B8\n" +
+            "D5 98 53 87 A3 56 1E 2D 69 6B 03 D9 59 8A 80 A3 B1 0E 9F AC 99 1F A3 1F 73 4C EB 5A E9 A6 64 FD\n" +
+            "47 BB F3 F5 C0 8E EB 55 43 BB DA D5 60 D8 5A 4D 87 CA 52 97 7A FB 23 D7 28 7C 06 29 10 0E EF 38\n" +
+            "DF B4 DD 5B 1B 26 38 07 3B 62 54 B9 53 69 30 12 A0 70 62 9C 08 98 9A 33 60 5F EB 6B B3 ED A8 74\n" +
+            "3D 62 1D F6 44 A2 66 E0 A1 53 96 B1 40 F1 C8 24 64 FD 01 FE 02 BF BA 00 4A EA CD 8B C6 7F 50 F7";
+    String e = "1 00 01";
+    String hexEncodedPublicKeyInfo = e.replaceAll("\\s", "").toLowerCase() + " " + m.replaceAll("\\s", "").toLowerCase();
+    System.out.println(hexEncodedPublicKeyInfo);
+    byte[] digest = MessageDigest.getInstance("SHA-256", new BouncyCastleProvider()).digest(hexEncodedPublicKeyInfo.getBytes(StandardCharsets.US_ASCII));
+    String actual = new String(Hex.encodeHex(digest, false));
+    String fingerprint = "90 B7 8F 15 D6 28 19 81 3F C7 96 D5 CA CF D4 DD\n" +
+            "E6 1A 5A A8 59 A4 39 8A 38 B8 36 C4 A0 D7 DD 48\n";
+    String expected = fingerprint.replaceAll("\\s", "");
+    if (!expected.equals(actual)) {
+      throw new RuntimeException(actual + " " + expected);
+    }
+  }
 }
