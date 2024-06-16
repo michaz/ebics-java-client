@@ -23,17 +23,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
-import java.security.interfaces.RSAPublicKey;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
 import org.apache.commons.codec.binary.Hex;
-import org.kopi.ebics.exception.EbicsException;
 import org.kopi.ebics.interfaces.InitLetter;
 import org.kopi.ebics.messages.Messages;
 
@@ -77,7 +74,7 @@ public abstract class AbstractInitLetter implements InitLetter {
                        String certTitle,
                        byte[] certificate,
                        String hashTitle,
-                       byte[] hash)
+                       String hash)
     throws IOException
   {
     letter = new Letter(getTitle(),
@@ -106,40 +103,11 @@ public abstract class AbstractInitLetter implements InitLetter {
    * @return the certificate hash
    * @throws GeneralSecurityException
    */
-  protected byte[] getHash(byte[] certificate) throws GeneralSecurityException {
+  protected String getHash(byte[] certificate) throws GeneralSecurityException {
     String hash256 = new String(
         Hex.encodeHex(MessageDigest.getInstance("SHA-256").digest(certificate), false));
-    return format(hash256, 32).getBytes();
+    return format(hash256, 32);
   }
-
-    public static byte[] getHash(RSAPublicKey publicKey) throws EbicsException {
-        String			modulus;
-        String			exponent;
-        String			hash;
-        byte[]			digest;
-
-        exponent = Hex.encodeHexString(publicKey.getPublicExponent().toByteArray());
-        modulus =  Hex.encodeHexString(removeFirstByte(publicKey.getModulus().toByteArray()));
-        hash = exponent + " " + modulus;
-
-        if (hash.charAt(0) == '0') {
-          hash = hash.substring(1);
-        }
-
-        try {
-          digest = MessageDigest.getInstance("SHA-256", "BC").digest(hash.getBytes("US-ASCII"));
-        } catch (GeneralSecurityException | UnsupportedEncodingException e) {
-          throw new EbicsException(e.getMessage());
-        }
-
-        return format(new String(Hex.encodeHex(digest, false)), 32).getBytes();
-    }
-
-    public static byte[] removeFirstByte(byte[] byteArray) {
-        byte[] b = new byte[byteArray.length - 1];
-        System.arraycopy(byteArray, 1, b, 0, b.length);
-        return b;
-    }
 
   /**
    * Formats a hash 256 input.
@@ -213,7 +181,7 @@ public abstract class AbstractInitLetter implements InitLetter {
     public void build(String certTitle,
                       byte[] certificate,
                       String hashTitle,
-                      byte[] hash)
+                      String hash)
       throws IOException
     {
       out = new ByteArrayOutputStream();
@@ -306,13 +274,13 @@ public abstract class AbstractInitLetter implements InitLetter {
      * @param hash the hash value
      * @throws IOException
      */
-    public void buildHash(String title, byte[] hash)
+    public void buildHash(String title, String hash)
       throws IOException
     {
       emit(title);
       emit(LINE_SEPARATOR);
       emit(LINE_SEPARATOR);
-      emit(new String(hash));
+      emit(hash);
       emit(LINE_SEPARATOR);
       emit(LINE_SEPARATOR);
       emit(LINE_SEPARATOR);

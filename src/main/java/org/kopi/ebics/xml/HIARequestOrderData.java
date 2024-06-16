@@ -18,15 +18,15 @@
 
 package org.kopi.ebics.xml;
 
+import java.security.interfaces.RSAPublicKey;
 import java.util.Calendar;
 
+import org.bouncycastle.util.BigIntegers;
 import org.kopi.ebics.exception.EbicsException;
 import org.kopi.ebics.schema.h003.*;
 import org.kopi.ebics.schema.xmldsig.RSAKeyValueType;
 import org.kopi.ebics.schema.xmldsig.X509DataType;
 import org.kopi.ebics.session.EbicsSession;
-
-import static org.kopi.ebics.letter.AbstractInitLetter.removeFirstByte;
 
 
 /**
@@ -60,7 +60,9 @@ public class HIARequestOrderData extends DefaultEbicsRootElement {
         encryptionX509Data = null;
         if (session.getUser().getPartner().getBank().useCertificate())
             encryptionX509Data = EbicsXmlFactory.createX509DataType(session.getUser().getDN(), session.getUser().getE002Certificate());
-        encryptionRsaKeyValue = EbicsXmlFactory.createRSAKeyValueType(session.getUser().getE002PublicKey().getPublicExponent().toByteArray(), removeFirstByte(session.getUser().getE002PublicKey().getModulus().toByteArray()));
+        RSAPublicKey publicKey1 = session.getUser().getE002PublicKey();
+        RSAPublicKey publicKey3 = session.getUser().getE002PublicKey();
+        encryptionRsaKeyValue = EbicsXmlFactory.createRSAKeyValueType(BigIntegers.asUnsignedByteArray(publicKey1.getPublicExponent()), BigIntegers.asUnsignedByteArray(publicKey3.getModulus()));
         PubKeyValueType encryptionPubKeyValue = PubKeyValueType.Factory.newInstance();
         encryptionPubKeyValue.setRSAKeyValue(encryptionRsaKeyValue);
         TimestampType timeStamp = TimestampType.Factory.newInstance();
@@ -70,7 +72,9 @@ public class HIARequestOrderData extends DefaultEbicsRootElement {
         authX509Data = null;
         if (session.getUser().getPartner().getBank().useCertificate())
             authX509Data = EbicsXmlFactory.createX509DataType(session.getUser().getDN(), session.getUser().getX002Certificate());
-        authRsaKeyValue = EbicsXmlFactory.createRSAKeyValueType(session.getUser().getX002PublicKey().getPublicExponent().toByteArray(), removeFirstByte(session.getUser().getX002PublicKey().getModulus().toByteArray()));
+        RSAPublicKey publicKey = session.getUser().getX002PublicKey();
+        RSAPublicKey publicKey2 = session.getUser().getX002PublicKey();
+        authRsaKeyValue = EbicsXmlFactory.createRSAKeyValueType(BigIntegers.asUnsignedByteArray(publicKey.getPublicExponent()), BigIntegers.asUnsignedByteArray(publicKey2.getModulus()));
         PubKeyValueType authenticationPubKeyValue = PubKeyValueType.Factory.newInstance();
         authenticationPubKeyValue.setRSAKeyValue(authRsaKeyValue);
         authenticationPubKeyValue.xsetTimeStamp(timeStamp);

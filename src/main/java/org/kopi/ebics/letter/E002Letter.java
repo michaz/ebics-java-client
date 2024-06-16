@@ -24,6 +24,7 @@ import java.security.GeneralSecurityException;
 import java.util.Locale;
 
 import org.apache.commons.codec.binary.Base64;
+import org.kopi.ebics.certificate.KeyUtil;
 import org.kopi.ebics.exception.EbicsException;
 import org.kopi.ebics.interfaces.EbicsUser;
 
@@ -68,7 +69,7 @@ public class E002Letter extends AbstractInitLetter {
                     getString("HIALetter.e002.certificate"),
                     null,
                     getString("HIALetter.e002.digest"),
-                    getHash(user.getE002PublicKey()));
+                    KeyUtil.getKeyDigest(user.getE002PublicKey()));
         }
     }
 

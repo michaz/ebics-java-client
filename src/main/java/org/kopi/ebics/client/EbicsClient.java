@@ -38,6 +38,8 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.util.BigIntegers;
+import org.kopi.ebics.certificate.KeyUtil;
 import org.kopi.ebics.exception.EbicsException;
 import org.kopi.ebics.exception.NoDownloadDataAvailableException;
 import org.kopi.ebics.interfaces.Configuration;
@@ -56,8 +58,6 @@ import org.kopi.ebics.session.EbicsSession;
 import org.kopi.ebics.session.OrderType;
 import org.kopi.ebics.session.Product;
 import org.kopi.ebics.utils.Constants;
-
-import static org.kopi.ebics.letter.AbstractInitLetter.removeFirstByte;
 
 /**
  * The ebics client application. Performs necessary tasks to contact the ebics
@@ -202,8 +202,7 @@ public class EbicsClient {
         Bank bank = createBank(url, bankName, hostId, useCertificates);
         Partner partner = createPartner(bank, partnerId);
         try {
-            User user = new User(partner, userId, name, email, country, organization,
-                passwordCallback);
+            User user = new User(partner, userId, name, email, country, organization, passwordCallback);
             createUserDirectories(user);
             if (saveCertificates) {
                 user.saveUserCertificates(configuration.getKeystoreDirectory(user));
@@ -624,7 +623,6 @@ public class EbicsClient {
         }
 
         if (cmd.hasOption("letters")) {
-            client.createLetters(client.defaultUser, false);
             client.createLetters2(client.defaultUser);
         }
 
@@ -710,9 +708,9 @@ public class EbicsClient {
         var dataModel = new HashMap<String, Object>();
         dataModel.put("user", user);
         dataModel.put("keyname", title);
-        dataModel.put("modulus", AbstractInitLetter.format(Hex.encodeHexString(removeFirstByte(publicKey.getModulus().toByteArray())).toUpperCase(), 64));
-        dataModel.put("exponent", AbstractInitLetter.format(Hex.encodeHexString(publicKey.getPublicExponent().toByteArray()).toUpperCase(), 64));
-        dataModel.put("hash", new String(AbstractInitLetter.getHash(publicKey)));
+        dataModel.put("modulus", AbstractInitLetter.format(Hex.encodeHexString(BigIntegers.asUnsignedByteArray(publicKey.getModulus())).toUpperCase(), 64));
+        dataModel.put("exponent", AbstractInitLetter.format(Hex.encodeHexString(BigIntegers.asUnsignedByteArray(publicKey.getPublicExponent())).toUpperCase(), 64));
+        dataModel.put("hash", AbstractInitLetter.format(KeyUtil.getKeyDigest(publicKey), 32));
         return dataModel;
     }
 
