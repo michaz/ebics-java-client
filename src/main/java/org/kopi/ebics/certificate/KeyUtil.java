@@ -76,9 +76,10 @@ public class KeyUtil {
     String exponent = Hex.encodeHexString(BigIntegers.asUnsignedByteArray(publicKey.getPublicExponent()));
     String modulus = Hex.encodeHexString(BigIntegers.asUnsignedByteArray(publicKey.getModulus()));
     String hexEncodedPublicKeyInfo = exponent + " " + modulus;
+    String hexEncodedPublicKeyInfoWithoutLeadingZeros = hexEncodedPublicKeyInfo.replaceFirst("^0+(?!$)", "");
 
     try {
-      return MessageDigest.getInstance("SHA-256", "BC").digest(hexEncodedPublicKeyInfo.getBytes(StandardCharsets.US_ASCII));
+      return MessageDigest.getInstance("SHA-256", "BC").digest(hexEncodedPublicKeyInfoWithoutLeadingZeros.getBytes(StandardCharsets.US_ASCII));
     } catch (GeneralSecurityException e) {
       throw new EbicsException(e.getMessage());
     }

@@ -242,8 +242,8 @@ public class KeyManagement {
     System.out.println(hexEncodedPublicKeyInfo);
     byte[] digest = MessageDigest.getInstance("SHA-256", new BouncyCastleProvider()).digest(hexEncodedPublicKeyInfo.getBytes(StandardCharsets.US_ASCII));
     String actual = new String(Hex.encodeHex(digest, false));
-    String fingerprint = "90 B7 8F 15 D6 28 19 81 3F C7 96 D5 CA CF D4 DD\n" +
-            "E6 1A 5A A8 59 A4 39 8A 38 B8 36 C4 A0 D7 DD 48\n";
+    String fingerprint = "95 F7 3C 21 2D 2D E0 23 DC 94 A4 4F 5C C7 C8 6B\n" +
+            "64 A4 6B B6 C1 B6 79 8D D3 B8 90 25 94 9F 88 FE";
     String expected = fingerprint.replaceAll("\\s", "");
     if (!expected.equals(actual)) {
       throw new RuntimeException(actual + " " + expected);
