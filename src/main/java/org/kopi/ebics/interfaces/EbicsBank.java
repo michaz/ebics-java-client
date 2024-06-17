@@ -94,11 +94,4 @@ public interface EbicsBank extends Serializable {
    * @param x002Key the banks authentication key.
    */
   public void setBankKeys(RSAPublicKey e002Key, RSAPublicKey x002Key);
-
-  /**
-   * Sets the bank digests.
-   * @param e002Digest encryption digest
-   * @param x002Digest authentication digest
-   */
-  public void setDigests(byte[] e002Digest, byte[] x002Digest);
 }
