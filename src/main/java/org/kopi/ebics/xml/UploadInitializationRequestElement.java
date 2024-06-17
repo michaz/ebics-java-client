@@ -114,7 +114,7 @@ public class UploadInitializationRequestElement extends InitializationRequestEle
 	                                                  decodeHex(session.getUser().getPartner().getBank().getX002Digest()));
     encryption = EbicsXmlFactory.createEncryption(session.getConfiguration().getEncryptionVersion(),
 	                                          "http://www.w3.org/2001/04/xmlenc#sha256",
-	                                          decodeHex(session.getUser().getPartner().getBank().getE002Digest()));
+	                                          session.getUser().getPartner().getBank().getE002Digest());
     bankPubKeyDigests = EbicsXmlFactory.createBankPubKeyDigests(authentication, encryption);
     orderType = EbicsXmlFactory.createOrderType(type.getCode());
     fileFormat = EbicsXmlFactory.createFileFormatType(session.getConfiguration().getLocale().getCountry().toUpperCase(),
@@ -167,7 +167,7 @@ public class UploadInitializationRequestElement extends InitializationRequestEle
     header = EbicsXmlFactory.createEbicsRequestHeader(true, mutable, xstatic);
     encryptionPubKeyDigest = EbicsXmlFactory.createEncryptionPubKeyDigest(session.getConfiguration().getEncryptionVersion(),
 								          "http://www.w3.org/2001/04/xmlenc#sha256",
-								          decodeHex(session.getUser().getPartner().getBank().getE002Digest()));
+								          session.getUser().getPartner().getBank().getE002Digest());
     signatureData = EbicsXmlFactory.createSignatureData(true, Utils.encrypt(Utils.zip(userSignature.prettyPrint()), keySpec));
     dataEncryptionInfo = EbicsXmlFactory.createDataEncryptionInfo(true,
 	                                                          encryptionPubKeyDigest,
