@@ -25,6 +25,8 @@ import java.io.ObjectOutputStream;
 import java.net.URL;
 import java.security.interfaces.RSAPublicKey;
 
+import org.kopi.ebics.certificate.KeyUtil;
+import org.kopi.ebics.exception.EbicsException;
 import org.kopi.ebics.interfaces.EbicsBank;
 import org.kopi.ebics.interfaces.Savable;
 
@@ -101,12 +103,20 @@ public class Bank implements EbicsBank, Savable {
 
   @Override
   public byte[] getE002Digest() {
-    return e002Digest;
+      try {
+          return KeyUtil.getKeyDigest(e002Key);
+      } catch (EbicsException e) {
+          throw new RuntimeException(e);
+      }
   }
 
   @Override
   public byte[] getX002Digest() {
-    return x002Digest;
+      try {
+          return KeyUtil.getKeyDigest(x002Key);
+      } catch (EbicsException e) {
+          throw new RuntimeException(e);
+      }
   }
 
   @Override
@@ -148,13 +158,6 @@ public class Bank implements EbicsBank, Savable {
   }
 
   @Override
-  public void setDigests(byte[] e002Digest, byte[] x002Digest) {
-    this.e002Digest = e002Digest;
-    this.x002Digest = x002Digest;
-    needSave = true;
-  }
-
-  @Override
   public String getSaveName() {
     return hostId + ".cer";
   }
@@ -186,18 +189,6 @@ public class Bank implements EbicsBank, Savable {
    * @serial
    */
   private String		name;
-
-  /**
-   * The bank encryption digest
-   * @serial
-   */
-  private byte[]		e002Digest;
-
-  /**
-   * The bank authentication digest
-   * @serial
-   */
-  private byte[]		x002Digest;
 
   /**
    * The ban encryption key
