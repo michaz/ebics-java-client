@@ -203,7 +203,9 @@ public class FileTransfer {
     initializer.validate();
 
     session.getConfiguration().getTraceManager().trace(initializer);
-    httpCode = sender.send(new ByteArrayContentFactory(initializer.prettyPrint()));
+    byte[] content = initializer.prettyPrint();
+    System.out.println(new String(content));
+    httpCode = sender.send(new ByteArrayContentFactory(content));
     Utils.checkHttpCode(httpCode);
     response = new DownloadInitializationResponseElement(sender.getResponseBody(),
 	                                          orderType,
