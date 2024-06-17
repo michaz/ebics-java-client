@@ -95,7 +95,6 @@ public class KeyManagement {
     session.getConfiguration().getTraceManager().trace(request);
     byte[] content = request.prettyPrint();
     System.out.println(new String(content));
-    if (0==0) throw new RuntimeException();
     httpCode = sender.send(new ByteArrayContentFactory(content));
     Utils.checkHttpCode(httpCode);
     response = new KeyManagementResponseElement(sender.getResponseBody(), "INIResponse");
@@ -123,7 +122,6 @@ public class KeyManagement {
     session.getConfiguration().getTraceManager().trace(request);
     byte[] content = request.prettyPrint();
     System.out.println(new String(content));
-    if (0==0) throw new RuntimeException();
     httpCode = sender.send(new ByteArrayContentFactory(content));
     Utils.checkHttpCode(httpCode);
     response = new KeyManagementResponseElement(sender.getResponseBody(), "HIAResponse");
@@ -236,14 +234,14 @@ public class KeyManagement {
             "D5 98 53 87 A3 56 1E 2D 69 6B 03 D9 59 8A 80 A3 B1 0E 9F AC 99 1F A3 1F 73 4C EB 5A E9 A6 64 FD\n" +
             "47 BB F3 F5 C0 8E EB 55 43 BB DA D5 60 D8 5A 4D 87 CA 52 97 7A FB 23 D7 28 7C 06 29 10 0E EF 38\n" +
             "DF B4 DD 5B 1B 26 38 07 3B 62 54 B9 53 69 30 12 A0 70 62 9C 08 98 9A 33 60 5F EB 6B B3 ED A8 74\n" +
-            "3D 62 1D F6 44 A2 66 E0 A1 53 96 B1 40 F1 C8 24 64 FD 01 FE 02 BF BA 00 4A EA CD 8B C6 7F 50 F7";
+            "3D 62 1D F6 44 A2 66 E0 A1 53 96 B1 40 F1 C8 24 64 FD 01 FE 02 BF BA 00 4A EA CD 8B C6 7F 50 F7\n";
     String e = "1 00 01";
     String hexEncodedPublicKeyInfo = e.replaceAll("\\s", "").toLowerCase() + " " + m.replaceAll("\\s", "").toLowerCase();
     System.out.println(hexEncodedPublicKeyInfo);
     byte[] digest = MessageDigest.getInstance("SHA-256", new BouncyCastleProvider()).digest(hexEncodedPublicKeyInfo.getBytes(StandardCharsets.US_ASCII));
     String actual = new String(Hex.encodeHex(digest, false));
     String fingerprint = "95 F7 3C 21 2D 2D E0 23 DC 94 A4 4F 5C C7 C8 6B\n" +
-            "64 A4 6B B6 C1 B6 79 8D D3 B8 90 25 94 9F 88 FE";
+            "64 A4 6B B6 C1 B6 79 8D D3 B8 90 25 94 9F 88 FE\n";
     String expected = fingerprint.replaceAll("\\s", "");
     if (!expected.equals(actual)) {
       throw new RuntimeException(actual + " " + expected);
