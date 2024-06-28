@@ -1,0 +1,9 @@
+* {
+    display: block;
+    font-family: Courier;
+}
+Ntry {
+    display: list-item;
+    color: red;
+    padding: 20px;
+}

@@ -23,6 +23,7 @@ import java.io.*;
 import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.interfaces.RSAPublicKey;
+import java.time.LocalDate;
 import java.util.*;
 
 import freemarker.template.Template;
@@ -58,6 +59,8 @@ import org.kopi.ebics.session.EbicsSession;
 import org.kopi.ebics.session.OrderType;
 import org.kopi.ebics.session.Product;
 import org.kopi.ebics.utils.Constants;
+
+import static java.time.ZoneOffset.UTC;
 
 /**
  * The ebics client application. Performs necessary tasks to contact the ebics
@@ -435,11 +438,6 @@ public class EbicsClient {
         }
     }
 
-    public void fetchFile(File file, EbicsOrderType orderType, Date start, Date end) throws IOException,
-        EbicsException {
-        fetchFile(file, defaultUser, defaultProduct, orderType, false, start, end);
-    }
-
     /**
      * Performs buffers save before quitting the client application.
      */
@@ -646,7 +644,9 @@ public class EbicsClient {
         for (EbicsOrderType type : fetchFileOrders) {
             if (hasOption(cmd, type)) {
                 client.fetchFile(getOutputFile(outputFileValue), client.defaultUser,
-                    client.defaultProduct, type, false, null, null);
+                    client.defaultProduct, type, false,
+                        new Date(LocalDate.of(2024,6,25).atStartOfDay(UTC).toEpochSecond() * 1000),
+                        new Date(LocalDate.of(2024,6,27).atStartOfDay(UTC).toEpochSecond() * 1000));
                 break;
             }
         }
